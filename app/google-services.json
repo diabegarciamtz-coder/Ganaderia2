@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "124112492972",
+    "project_id": "ganaderia20-ed71e",
+    "storage_bucket": "ganaderia20-ed71e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:124112492972:android:fbb3e0464a485ed4d60209",
+        "android_client_info": {
+          "package_name": "mx.edu.utng.lojg.ganaderia20"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1EV6WtC4Bsk6BdQ1_I8hNE6GQUT-2h8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
