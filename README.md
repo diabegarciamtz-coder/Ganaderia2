@@ -1,5 +1,9 @@
+# 🐄 Sistema de Gestión Ganadera
 
-# Sistema Integral de Gestión Ganadera
+[![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://www.android.com/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpack-compose&logoColor=white)](https://developer.android.com/jetpack/compose)
 
 El Sistema Integral de Gestión Ganadera es una aplicación móvil Android nativa diseñada para optimizar la administración de ranchos en Dolores Hidalgo. 
 Su objetivo es sustituir los registros manuales tradicionales por un sistema digital que permita llevar un control preciso de cada animal, gestionar 
@@ -14,14 +18,6 @@ que pueden dar de alta animales, actualizar información y consultar reportes; y
 Todo el sistema de permisos se gestiona en tiempo real mediante Firebase, lo que asegura que cualquier modificación realizada por el administrador se 
 refleje de inmediato en la cuenta de los empleados sin necesidad de reiniciar sesión.
 
-# 🐄 Sistema de Gestión Ganadera
-
-[![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://www.android.com/)
-[![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
-[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpack-compose&logoColor=white)](https://developer.android.com/jetpack/compose)
-
-Sistema móvil integral para la gestión y administración de ganado en ranchos, desarrollado con las tecnologías más modernas de Android.
 
 ## 📱 Características Principales
 
