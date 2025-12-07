@@ -277,9 +277,9 @@ Run → Run 'app'
 ### Dashboard y Gestión de Animales
 <p align="center">
   <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/Dashboard.jpg" width="200" />
+   <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/RegistrarCria.jpg" width="200" /> 
   <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/MisAnimales.jpg" width="200" />
   <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/FiltroMisAnimales.jpg" width="200" />
-  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/RegistrarCria.jpg" width="200" />
 </p>
 
 ### Historial Médico y Reportes
@@ -293,10 +293,10 @@ Run → Run 'app'
 ### Administración
 <p align="center">
   <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/AdministracionUsuarios.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/CreacionCodigoInvitaciom.jpg" width="200" />
+    <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/CodigoGenerado.jpg" width="200" />  
   <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/ConfiguracionCuenta.jpg" width="200" />
   <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/ConfiguarcionCuenta2.jpg" width="200" />
-  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/CreacionCodigoInvitaciom.jpg" width="200" />
-    <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/CodigoGenerado.jpg" width="200" />
 </p>
 
 ## 🎯 Casos de Uso
