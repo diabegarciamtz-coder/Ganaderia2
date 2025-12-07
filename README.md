@@ -269,30 +269,34 @@ Run → Run 'app'
 
 ### Autenticación
 <p align="center">
-  <img src="docs/splash.png" width="200" />
-  <img src="docs/login.png" width="200" />
-  <img src="docs/registro.png" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/Login.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/CreacionCuenta.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/CreacionCuenta2.jpg" width="200" />
 </p>
 
 ### Dashboard y Gestión de Animales
 <p align="center">
-  <img src="docs/dashboard.png" width="200" />
-  <img src="docs/mis_animales.png" width="200" />
-  <img src="docs/registrar_animal.png" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/Dashboard.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/MisAnimales.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/FiltroMisAnimales.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/RegistrarCria.jpg" width="200" />
 </p>
 
 ### Historial Médico y Reportes
 <p align="center">
-  <img src="docs/historial_salud.png" width="200" />
-  <img src="docs/grafica_peso.png" width="200" />
-  <img src="docs/reportes.png" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/RegistroSalud.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/HistorialGeneralSalud.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/ReporteSaludAnimal.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/ReportesGenerales.jpg" width="200" />
 </p>
 
 ### Administración
 <p align="center">
-  <img src="docs/usuarios.png" width="200" />
-  <img src="docs/configuracion.png" width="200" />
-  <img src="docs/codigos.png" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/AdministracionUsuarios.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/ConfiguracionCuenta.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/ConfiguarcionCuenta2.jpg" width="200" />
+  <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/CreacionCodigoInvitaciom.jpg" width="200" />
+    <img src="https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/CodigoGenerado.jpg" width="200" />
 </p>
 
 ## 🎯 Casos de Uso
