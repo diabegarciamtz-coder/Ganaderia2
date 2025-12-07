@@ -31,7 +31,20 @@ import androidx.compose.material.icons.filled.Pets
 import androidx.compose.ui.unit.sp
 import mx.edu.utng.lojg.ganaderia20.R
 
-
+/**
+ * Pantalla principal que muestra la lista de animales del usuario o rancho.
+ *
+ * Permite al usuario:
+ * 1. Ver la lista de animales cargados desde el ViewModel, filtrada por el [uid] y [rol].
+ * 2. Buscar/filtrar animales por nombre o arete.
+ * 3. Interactuar con cada animal a través de [TarjetaAnimalExpandible].
+ * 4. Navegar a la pantalla de registro de cría.
+ *
+ * @param navController El controlador de navegación para el flujo de la aplicación.
+ * @param viewModel El [GanadoViewModel] para gestionar la carga y el estado de los animales.
+ * @param uid El ID del usuario actual.
+ * @param rol El rol del usuario actual, usado para determinar qué animales cargar.
+ */
 @Composable
 fun PantallaMisAnimales(
     navController: NavController,
@@ -61,14 +74,7 @@ fun PantallaMisAnimales(
     }
 
     Scaffold(
-        /*floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate("registrar_cria") },
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(Icons.Default.Add, "Registrar nueva cría")
-            }
-        }*/
+        /*floatingActionButton = { ... } */ // FAB comentado en el código original
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -85,6 +91,7 @@ fun PantallaMisAnimales(
 
             Spacer(Modifier.height(12.dp))
 
+            // Campo de Búsqueda
             OutlinedTextField(
                 value = busqueda,
                 onValueChange = { busqueda = it },
@@ -98,8 +105,10 @@ fun PantallaMisAnimales(
 
             Spacer(Modifier.height(16.dp))
 
-            // Mostrar mensaje si no hay animales
+            // --- Lógica de Estado Vacío y Lista ---
+
             if (animales.isEmpty()) {
+                // Estado vacío general (no hay registros en total)
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -114,6 +123,7 @@ fun PantallaMisAnimales(
                     }
                 }
             } else if (filtrados.isEmpty() && busqueda.isNotBlank()) {
+                // Estado de "sin resultados" en la búsqueda
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -124,6 +134,7 @@ fun PantallaMisAnimales(
                     Text("No se encontraron animales con '$busqueda'")
                 }
             } else {
+                // Lista de animales filtrados
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -132,10 +143,11 @@ fun PantallaMisAnimales(
                         TarjetaAnimalExpandible(
                             animal = animal,
                             onVerHistorial = {
-                                // Aquí se navega a la pantalla de reporte que incluye la gráfica
+                                // Navega al reporte de salud del animal (incluye la gráfica)
                                 navController.navigate("health_report/${animal.arete}")
                             },
                             onActualizarPeso = {
+                                // Navega a la pantalla para actualizar peso
                                 navController.navigate("actualizar_peso/${animal.arete}")
                             },
                             navController = navController
@@ -146,6 +158,7 @@ fun PantallaMisAnimales(
 
             Spacer(Modifier.height(20.dp))
 
+            // Botón de registro al final
             Button(
                 onClick = { navController.navigate("registrar_cria") },
                 modifier = Modifier.align(Alignment.End)
@@ -156,6 +169,20 @@ fun PantallaMisAnimales(
     }
 }
 
+/**
+ * Componente de tarjeta de animal que puede expandirse para mostrar detalles y acciones.
+ *
+ * Muestra el nombre, arete, tipo, raza, foto, peso y estado de salud.
+ * Al expandirse, muestra detalles adicionales y botones de acción:
+ * - [onActualizarPeso]: Navega a la pantalla de actualización de peso.
+ * - [onVerHistorial]: Navega a la pantalla de reporte de salud.
+ * - Registro de evento de salud.
+ *
+ * @param animal La entidad [AnimalEntity] a mostrar.
+ * @param onVerHistorial Lambda para la acción de ver el reporte/historial.
+ * @param onActualizarPeso Lambda para la acción de actualizar el peso.
+ * @param navController El controlador de navegación necesario para el botón de 'Registrar Evento de Salud'.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TarjetaAnimalExpandible(
@@ -169,20 +196,20 @@ fun TarjetaAnimalExpandible(
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        onClick = { expanded = !expanded }
+        onClick = { expanded = !expanded } // Toggle de expansión al hacer clic en la tarjeta
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header de la tarjeta CON FOTO
+            // Header de la tarjeta CON FOTO/ÍCONO
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // FOTO DEL ANIMAL
+                // FOTO DEL ANIMAL o Ícono por defecto
                 if (animal.foto != null) {
                     AsyncImage(
                         model = animal.foto,
@@ -194,7 +221,6 @@ fun TarjetaAnimalExpandible(
                         error = painterResource(R.drawable.vaca_logo) // Imagen por defecto si falla
                     )
                 } else {
-                    // Icono por defecto si no hay foto
                     Icon(
                         Icons.Default.Pets,
                         contentDescription = "Sin foto",
@@ -228,6 +254,7 @@ fun TarjetaAnimalExpandible(
                     )
                 }
 
+                // Ícono de expansión
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = if (expanded) "Contraer" else "Expandir",
@@ -235,7 +262,7 @@ fun TarjetaAnimalExpandible(
                 )
             }
 
-            // Información básica siempre visible
+            // Información básica siempre visible (Peso y Estado)
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -245,7 +272,7 @@ fun TarjetaAnimalExpandible(
                 InfoItem("Estado", animal.estadoSalud)
             }
 
-            // Información expandida
+            // Información expandida (detalles y botones)
             if (expanded) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Divider()
@@ -254,6 +281,7 @@ fun TarjetaAnimalExpandible(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Detalles
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -275,7 +303,7 @@ fun TarjetaAnimalExpandible(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Botones de acción
+                    // Botones de acción principales
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -315,6 +343,14 @@ fun TarjetaAnimalExpandible(
     }
 }
 
+
+/**
+ * Componente para mostrar un par título/valor en una columna, centrado.
+ * Usado para datos clave siempre visibles (Peso, Estado).
+ *
+ * @param titulo La etiqueta (ej. "Peso").
+ * @param valor El dato (ej. "500 kg").
+ */
 @Composable
 fun InfoItem(titulo: String, valor: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -331,6 +367,13 @@ fun InfoItem(titulo: String, valor: String) {
     }
 }
 
+/**
+ * Componente para mostrar un par título/valor, alineado a la izquierda.
+ * Usado en la sección expandida para detalles.
+ *
+ * @param titulo La etiqueta (ej. "Fecha Nac.").
+ * @param valor El dato (ej. "01/01/2023").
+ */
 @Composable
 fun InfoItemDetalle(titulo: String, valor: String) {
     Column {
@@ -347,6 +390,15 @@ fun InfoItemDetalle(titulo: String, valor: String) {
     }
 }
 
+/**
+ * Función privada para calcular la edad aproximada de un animal
+ * a partir de una fecha de nacimiento en formato "dd/MM/yyyy".
+ *
+ * Devuelve la edad en días, meses o años.
+ *
+ * @param fechaNacimiento La fecha de nacimiento como String.
+ * @return Una cadena de texto con la edad aproximada (ej. "2 años").
+ */
 private fun calcularEdad(fechaNacimiento: String): String {
     return try {
         val formato = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
@@ -366,6 +418,14 @@ private fun calcularEdad(fechaNacimiento: String): String {
     }
 }
 
+
+/**
+ * Pantalla Composable para registrar el nuevo peso de un animal y guardar un registro de salud asociado.
+ *
+ * @param navController El controlador de navegación para volver a la pantalla anterior.
+ * @param viewModel El [GanadoViewModel] para cargar la información del animal y ejecutar las actualizaciones.
+ * @param arete El arete del animal a actualizar.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActualizarPesoScreen(
@@ -379,6 +439,7 @@ fun ActualizarPesoScreen(
 
     val animal by viewModel.animalSeleccionado
 
+    // Carga la información del animal al iniciar la pantalla
     LaunchedEffect(arete) {
         viewModel.cargarAnimalPorArete(arete)
     }
@@ -450,20 +511,21 @@ fun ActualizarPesoScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // ---------- BOTÓN CON LA LÓGICA ACTUALIZADA ----------
+                // Botón de Actualizar
                 Button(
                     onClick = {
                         if (nuevoPeso.isNotBlank()) {
                             isLoading = true
                             val pesoDouble = nuevoPeso.toDoubleOrNull() ?: 0.0
 
-                            // Guardar con formato que incluya "kg" para que sea detectado
+                            // 1. Registrar un evento de salud con la actualización de peso
                             viewModel.agregarRegistroSaludSimple(
                                 arete = arete,
                                 tipo = "Actualización de peso",
                                 descripcion = "Nuevo peso: $nuevoPeso kg. ${if (observaciones.isNotEmpty()) "Obs: $observaciones" else ""}"
                             )
 
+                            // 2. Actualizar el campo 'peso' en la entidad del animal
                             viewModel.actualizarPesoAnimal(
                                 arete = arete,
                                 nuevoPeso = pesoDouble,
@@ -471,6 +533,7 @@ fun ActualizarPesoScreen(
                             ) { exito ->
                                 isLoading = false
                                 if (exito) {
+                                    // Vuelve a la pantalla anterior (Mis Animales o Reporte de Salud)
                                     navController.popBackStack()
                                 }
                             }

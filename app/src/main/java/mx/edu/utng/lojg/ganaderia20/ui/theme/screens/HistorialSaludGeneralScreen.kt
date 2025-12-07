@@ -26,16 +26,36 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.runtime.setValue
 
+/**
+ * Pantalla Composable que muestra el historial completo de registros de salud de todo el ganado.
+ *
+ * Esta pantalla incluye una funcionalidad de búsqueda y filtrado de los registros de salud
+ * (vacunaciones, tratamientos, diagnósticos) cargados desde [GanadoViewModel].
+ *
+ * @param navController El controlador de navegación para manejar la acción de volver.
+ * @param viewModel El [GanadoViewModel] para acceder y gestionar la lista de [registrosSalud].
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistorialSaludGeneralScreen(
     navController: NavController,
     viewModel: GanadoViewModel
 ) {
-    val registrosSalud by viewModel.registrosSalud.collectAsState()
+    // Estado que contiene la lista completa de registros de salud
+    // FIX: Agregado initial = emptyList() para evitar crash en emulador nuevo
+    val registrosSalud by viewModel.registrosSalud.collectAsState(initial = emptyList())
+    // Estado local para almacenar la cadena de búsqueda del usuario
     var busqueda by remember { mutableStateOf("") }
 
-    // FILTRAR registros
+    /**
+     * Lista de registros de salud filtrados.
+     * Se recalcula automáticamente cada vez que [registrosSalud] o [busqueda] cambian.
+     * El filtro busca coincidencias (ignorando mayúsculas/minúsculas) en:
+     * - Arete del animal (areteAnimal)
+     * - Tipo de registro/enfermedad (tipo)
+     * - Responsable (responsable)
+     * - Tratamiento (tratamiento)
+     */
     val registrosFiltrados = remember(registrosSalud, busqueda) {
         if (busqueda.isBlank()) {
             registrosSalud
@@ -49,6 +69,7 @@ fun HistorialSaludGeneralScreen(
         }
     }
 
+    // Efecto para cargar todos los registros de salud la primera vez que se compone la pantalla
     LaunchedEffect(Unit) {
         viewModel.cargarTodosLosRegistros()
     }
@@ -78,7 +99,7 @@ fun HistorialSaludGeneralScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            // CAMPO DE BÚSQUEDA
+            // CAMPO DE BÚSQUEDA (OutlinedTextField)
             OutlinedTextField(
                 value = busqueda,
                 onValueChange = { busqueda = it },
@@ -87,6 +108,7 @@ fun HistorialSaludGeneralScreen(
                     Icon(Icons.Default.Search, contentDescription = "Buscar")
                 },
                 trailingIcon = {
+                    // Muestra el icono de limpiar solo si hay texto en la búsqueda
                     if (busqueda.isNotEmpty()) {
                         IconButton(onClick = { busqueda = "" }) {
                             Icon(Icons.Default.Clear, contentDescription = "Limpiar")
@@ -99,6 +121,7 @@ fun HistorialSaludGeneralScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Indicador de resultados de búsqueda
             if (busqueda.isNotEmpty()) {
                 Text(
                     "${registrosFiltrados.size} resultado(s) encontrado(s)",
@@ -115,6 +138,9 @@ fun HistorialSaludGeneralScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // --- Lógica de Estado Vacío (Empty State) ---
+
+            // 1. No hay registros y la búsqueda está vacía (lista general vacía)
             if (registrosFiltrados.isEmpty() && busqueda.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -124,7 +150,7 @@ fun HistorialSaludGeneralScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            Icons.Default.Favorite,
+                            Icons.Default.Favorite, // Ícono genérico de salud/bienestar
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -137,7 +163,9 @@ fun HistorialSaludGeneralScreen(
                         )
                     }
                 }
-            } else if (registrosFiltrados.isEmpty() && busqueda.isNotEmpty()) {
+            }
+            // 2. No hay registros, pero la búsqueda NO está vacía (cero resultados)
+            else if (registrosFiltrados.isEmpty() && busqueda.isNotEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -146,7 +174,7 @@ fun HistorialSaludGeneralScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            Icons.Default.SearchOff,
+                            Icons.Default.SearchOff, // Ícono de búsqueda sin resultados
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -159,16 +187,21 @@ fun HistorialSaludGeneralScreen(
                         )
                     }
                 }
-            } else {
+            }
+            // 3. Hay registros filtrados o la lista completa
+            else {
+                // Lista perezosa (LazyColumn) para mostrar los registros
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(registrosFiltrados) { registro ->
+                        // Componente para mostrar la información de un registro de salud
                         TarjetaSalud(
                             registro = registro,
                             viewModel = viewModel,
                             onEstadoCambiado = {
+                                // Recarga la lista completa si el estado de un registro cambia
                                 viewModel.cargarTodosLosRegistros()
                             }
                         )

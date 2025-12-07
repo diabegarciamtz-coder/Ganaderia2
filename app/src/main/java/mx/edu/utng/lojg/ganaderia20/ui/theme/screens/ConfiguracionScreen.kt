@@ -33,6 +33,20 @@ import java.text.SimpleDateFormat
 import java.util.*
 import mx.edu.utng.lojg.ganaderia20.viewmodel.AuthViewModel
 
+/**
+ * Clase de datos que representa un código de invitación en la capa de interfaz de usuario.
+ *
+ * Esta clase se utiliza para mapear y mostrar la información relevante de los códigos de invitación
+ * generados por el administrador/propietario.
+ *
+ * @property id El ID único del código de invitación.
+ * @property codigo La cadena alfanumérica del código de invitación.
+ * @property tipo El rol de usuario que este código permite registrar (ej. "veterinario", "empleado").
+ * @property activo Indica si el código está actualmente activo.
+ * @property fechaCreacion El timestamp de Firebase que indica cuándo se creó el código.
+ * @property usadoEl El timestamp de Firebase que indica cuándo se utilizó el código por última vez (opcional).
+ * @property usosRestantes El número de veces que este código puede ser usado antes de agotarse.
+ */
 data class CodigoInvitacionUI(
     val id: String,
     val codigo: String,
@@ -43,6 +57,18 @@ data class CodigoInvitacionUI(
     val usosRestantes: Int = 1
 )
 
+/**
+ * Pantalla Composable principal para la configuración de la cuenta y administración de la aplicación.
+ *
+ * Permite al usuario ver la información de su cuenta, cambiar la contraseña y, si es administrador
+ * o propietario, gestionar y generar códigos de invitación.
+ *
+ * @param navController El controlador de navegación para cambiar de pantalla.
+ * @param authViewModel El ViewModel de autenticación para manejar las operaciones de sesión (ej. cerrar sesión).
+ * @param userId El ID del usuario actual.
+ * @param userRole El rol del usuario actual (ej. "admin", "usuario").
+ * @param propietarioRancho Bandera que indica si el usuario es el propietario del rancho.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfiguracionScreen(
@@ -53,20 +79,24 @@ fun ConfiguracionScreen(
     propietarioRancho: Boolean = false
 ) {
 
+    // --- Estados para Campos de Formulario ---
     val nombre = remember { mutableStateOf("Administrador Sistema") }
     val correo = remember { mutableStateOf("correo@ejemplo.com") }
     val telefono = remember { mutableStateOf("123-456-7890") }
     val contrasenaActual = remember { mutableStateOf("") }
     val nuevaContrasena = remember { mutableStateOf("") }
 
+    // --- Estados para Control de UI y Lógica Admin ---
     var mostrarGenerarCodigo by remember { mutableStateOf(false) }
     var mostrarDialogoCerrarSesion by remember { mutableStateOf(false) }
     var codigosGenerados by remember { mutableStateOf<List<CodigoInvitacionUI>>(emptyList()) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Determina si se deben mostrar las funciones de administrador/propietario
     val mostrarFuncionesAdmin = userRole == "admin" || propietarioRancho
 
+    // Carga los códigos de invitación al inicializar si el usuario tiene permisos
     LaunchedEffect(userId, userRole, propietarioRancho) {
         if (mostrarFuncionesAdmin) {
             try {
@@ -88,10 +118,15 @@ fun ConfiguracionScreen(
         }
     }
 
-    // Función para cerrar sesión
+    /**
+     * Cierra la sesión del usuario actual y navega a la pantalla de login.
+     *
+     * Utiliza [authViewModel.logout] y limpia la pila de navegación.
+     */
     fun cerrarSesion() {
         authViewModel.logout()
         navController.navigate("login") {
+            // Limpia la pila de navegación para que el usuario no pueda volver atrás.
             popUpTo(0) { inclusive = true }
         }
     }
@@ -122,6 +157,7 @@ fun ConfiguracionScreen(
                 .background(Color(0xFFF8FAFC))
                 .padding(24.dp)
         ) {
+            // --- Tarjeta de Resumen de Cuenta ---
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -145,6 +181,7 @@ fun ConfiguracionScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
+            // --- Sección de Información Personal ---
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -184,7 +221,7 @@ fun ConfiguracionScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // Sección de Cambiar Contraseña
+            // --- Sección de Cambiar Contraseña ---
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -217,7 +254,7 @@ fun ConfiguracionScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // Sección de Seguridad con botón cerrar sesión
+            // --- Sección de Seguridad y Cerrar Sesión ---
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -267,6 +304,7 @@ fun ConfiguracionScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
+            // --- Sección de Administración (solo si es admin/propietario) ---
             if (mostrarFuncionesAdmin) {
                 item {
                     Card(
@@ -315,6 +353,7 @@ fun ConfiguracionScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                // --- Listado de Códigos Generados ---
                 if (codigosGenerados.isNotEmpty()) {
                     item {
                         Text(
@@ -353,7 +392,7 @@ fun ConfiguracionScreen(
         }
     }
 
-    // Diálogo de confirmación para cerrar sesión
+    // --- Diálogo de Confirmación de Cerrar Sesión ---
     if (mostrarDialogoCerrarSesion) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoCerrarSesion = false },
@@ -393,6 +432,7 @@ fun ConfiguracionScreen(
         )
     }
 
+    // --- Diálogo de Generación de Código de Invitación ---
     if (mostrarGenerarCodigo) {
         var tipoSeleccionado by remember { mutableStateOf("veterinario") }
         var usosSeleccionados by remember { mutableStateOf(1) }
@@ -471,6 +511,7 @@ fun ConfiguracionScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
+                        // Muestra un ejemplo dinámico del código
                         "Ejemplo: ${CodigoInvitacionRepository.generarCodigoPersonalizado(longitudSeleccionada)}",
                         fontSize = 12.sp,
                         color = Color.Gray,
@@ -483,6 +524,7 @@ fun ConfiguracionScreen(
                     onClick = {
                         scope.launch {
                             try {
+                                // Llama al repositorio para crear y guardar el código en Firebase
                                 val nuevoCodigoFirebase = CodigoInvitacionRepository.crearCodigoInvitacionPersonalizado(
                                     adminId = userId,
                                     tipo = tipoSeleccionado,
@@ -491,6 +533,7 @@ fun ConfiguracionScreen(
                                     longitudCodigo = longitudSeleccionada
                                 )
 
+                                // Mapea el resultado a la clase de UI
                                 val nuevoCodigoUI = CodigoInvitacionUI(
                                     id = nuevoCodigoFirebase.id,
                                     codigo = nuevoCodigoFirebase.codigo,
@@ -500,6 +543,7 @@ fun ConfiguracionScreen(
                                     usosRestantes = nuevoCodigoFirebase.usosRestantes
                                 )
 
+                                // Añade el nuevo código al inicio de la lista
                                 codigosGenerados = listOf(nuevoCodigoUI) + codigosGenerados
                                 mostrarGenerarCodigo = false
                                 snackbarHostState.showSnackbar("Código generado exitosamente")
@@ -523,6 +567,15 @@ fun ConfiguracionScreen(
     }
 }
 
+/**
+ * Componente Composable que presenta un código de invitación generado en formato de tarjeta.
+ *
+ * Permite al usuario ver el estado, tipo, usos restantes del código y copiarlo al portapapeles.
+ * También permite eliminar el código si está inactivo o agotado.
+ *
+ * @param codigo El objeto [CodigoInvitacionUI] con los datos del código a mostrar.
+ * @param onEliminar Función lambda que se invoca para eliminar el código, pasando el ID del código.
+ */
 @Composable
 fun TarjetaCodigoInvitacion(
     codigo: CodigoInvitacionUI,
@@ -561,6 +614,7 @@ fun TarjetaCodigoInvitacion(
                         modifier = Modifier.padding(end = 8.dp)
                     )
 
+                    // Muestra el botón de eliminar solo si está inactivo o agotado
                     if (!codigo.activo || codigo.usosRestantes == 0) {
                         IconButton(
                             onClick = { mostrarDialogoEliminar = true },
@@ -591,13 +645,14 @@ fun TarjetaCodigoInvitacion(
 
             Button(
                 onClick = {
+                    // Copia el código al portapapeles
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     val clip = ClipData.newPlainText("Código de invitación", codigo.codigo)
                     clipboard.setPrimaryClip(clip)
                     // Opcional: Mostrar un Snackbar
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = codigo.activo && codigo.usosRestantes > 0,
+                enabled = codigo.activo && codigo.usosRestantes > 0, // Solo activo si está activo y tiene usos
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (codigo.activo && codigo.usosRestantes > 0)
                         Color(0xFF3B82F6) else Color.LightGray
@@ -610,6 +665,7 @@ fun TarjetaCodigoInvitacion(
         }
     }
 
+    // Diálogo de confirmación de eliminación
     if (mostrarDialogoEliminar) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoEliminar = false },
@@ -637,6 +693,14 @@ fun TarjetaCodigoInvitacion(
     }
 }
 
+/**
+ * Función auxiliar para formatear un [Timestamp] de Firebase a una cadena de fecha y hora legible.
+ *
+ * El formato utilizado es "dd/MM/yyyy HH:mm".
+ *
+ * @param timestamp El objeto [Timestamp] a formatear.
+ * @return La cadena de fecha y hora formateada.
+ */
 private fun formatearFecha(timestamp: Timestamp): String {
     val date = timestamp.toDate()
     val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())

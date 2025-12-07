@@ -37,6 +37,23 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 
+/**
+ * Pantalla Composable que proporciona una visión consolidada de los datos del inventario
+ * ganadero, incluyendo estadísticas resumidas y opciones para exportar la información.
+ *
+ * ## Funcionalidades Principales
+ * 1. **Cálculo de Estadísticas:** Calcula y muestra en tiempo real el inventario por tipo
+ * (Vacas, Toros, Becerros) y la distribución por raza, utilizando la lista reactiva de [viewModel.animales].
+ * 2. **Exportación de Datos:** Ofrece botones (actualmente solo PDF) para generar archivos
+ * exportables de la lista de animales utilizando la utilidad [ExportUtils].
+ * 3. **Feedback:** Muestra el estado de la exportación (cargando, éxito, error) mediante
+ * mensajes condicionales y un indicador de progreso circular.
+ * 4. **Resumen General:** Proporciona métricas rápidas como el total de animales y el peso promedio.
+ *
+ * @param navController El controlador de navegación (actualmente no utilizado para navegar).
+ * @param viewModel La instancia del [GanadoViewModel] que proporciona la lista reactiva de animales.
+ */
+
 @Composable
 fun ReportsScreen(
     navController: NavController,
@@ -45,15 +62,21 @@ fun ReportsScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+    // Debug: Log para verificar que la pantalla se está cargando
+    android.util.Log.d("ReportsScreen", "Pantalla iniciada")
+    android.util.Log.d("ReportsScreen", "ViewModel: $viewModel")
+
     // Obtener animales del ViewModel
-    val animales by viewModel.animales.collectAsState()
+    val animales by viewModel.animales.collectAsState(initial = emptyList())
+
+    android.util.Log.d("ReportsScreen", "Animales cargados: ${animales.size}")
 
     // Estados de carga/feedback
     var exporting by remember { mutableStateOf(false) }
     var exportMessage by remember { mutableStateOf<String?>(null) }
     var tipoExportacion by remember { mutableStateOf("") }
 
-    // Calcular estadísticas
+    // Calcular estadísticas de forma segura
     val inventory = remember(animales) {
         listOf(
             InventoryItem("Vacas", animales.count { it.tipo.equals("Vaca", true) }),
@@ -81,6 +104,52 @@ fun ReportsScreen(
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text("Inventario por Tipo", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                /*
+                // Botón Descargar Excel
+                Button(
+                    onClick = {
+                        if (animales.isEmpty()) {
+                            exportMessage = "⚠️ No hay animales para exportar"
+                            return@Button
+                        }
+
+                        exporting = true
+                        tipoExportacion = "Excel"
+                        exportMessage = null
+
+                        coroutineScope.launch {
+                            ExportUtils.generarExcelAnimales(
+                                context = context,
+                                animales = animales,
+                                onSuccess = { file ->
+                                    exporting = false
+                                    exportMessage = "✅ Excel generado: ${file.name}"
+                                    // Abrir el archivo
+                                    ExportUtils.abrirArchivo(context, file)
+                                },
+                                onError = { error ->
+                                    exporting = false
+                                    exportMessage = "❌ $error"
+                                }
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !exporting
+                ) {
+                    if (exporting && tipoExportacion == "Excel") {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text(if (exporting && tipoExportacion == "Excel") "Generando..." else "Descargar Excel")
+                }*/
+
                 Spacer(modifier = Modifier.height(8.dp))
                 inventory.forEach { item ->
                     Row(
@@ -152,7 +221,6 @@ fun ReportsScreen(
                                 onSuccess = { file ->
                                     exporting = false
                                     exportMessage = "✅ PDF generado: ${file.name}"
-                                    // Abrir el archivo
                                     ExportUtils.abrirArchivo(context, file)
                                 },
                                 onError = { error ->
@@ -175,52 +243,6 @@ fun ReportsScreen(
                     }
                     Text(if (exporting && tipoExportacion == "PDF") "Generando..." else "Descargar PDF")
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                /*
-                // Botón Descargar Excel
-                Button(
-                    onClick = {
-                        if (animales.isEmpty()) {
-                            exportMessage = "⚠️ No hay animales para exportar"
-                            return@Button
-                        }
-
-                        exporting = true
-                        tipoExportacion = "Excel"
-                        exportMessage = null
-
-                        coroutineScope.launch {
-                            ExportUtils.generarExcelAnimales(
-                                context = context,
-                                animales = animales,
-                                onSuccess = { file ->
-                                    exporting = false
-                                    exportMessage = "✅ Excel generado: ${file.name}"
-                                    // Abrir el archivo
-                                    ExportUtils.abrirArchivo(context, file)
-                                },
-                                onError = { error ->
-                                    exporting = false
-                                    exportMessage = "❌ $error"
-                                }
-                            )
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !exporting
-                ) {
-                    if (exporting && tipoExportacion == "Excel") {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-                    Text(if (exporting && tipoExportacion == "Excel") "Generando..." else "Descargar Excel")
-                }*/
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -248,7 +270,7 @@ fun ReportsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Resumen general
+        // Resumen general - FIX: Cálculo seguro del peso promedio
         Card(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             shape = RoundedCornerShape(8.dp),
@@ -259,7 +281,17 @@ fun ReportsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Total de Animales: ${animales.size}")
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Peso promedio: ${if (animales.isNotEmpty()) "%.2f kg".format(animales.mapNotNull { it.peso.toDoubleOrNull() }.average()) else "N/A"}")
+
+                // Cálculo seguro del peso promedio
+                val pesoPromedio = remember(animales) {
+                    val pesos = animales.mapNotNull { it.peso.toDoubleOrNull() }
+                    if (pesos.isNotEmpty()) {
+                        "%.2f kg".format(pesos.average())
+                    } else {
+                        "N/A"
+                    }
+                }
+                Text("Peso promedio: $pesoPromedio")
             }
         }
     }

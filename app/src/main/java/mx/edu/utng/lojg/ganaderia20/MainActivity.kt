@@ -17,9 +17,24 @@ import mx.edu.utng.lojg.ganaderia20.data.AppDatabase
 import mx.edu.utng.lojg.ganaderia20.viewmodel.GanadoViewModel
 import mx.edu.utng.lojg.ganaderia20.viewmodel.AuthViewModel
 
+/**
+ * [MainActivity] es el punto de entrada principal de la aplicación.
+ *
+ * Esta actividad configura el entorno Compose, inicializa la base de datos Room,
+ * y crea las instancias de los ViewModels (`AuthViewModel` y `GanadoViewModel`)
+ * utilizando Factorys para inyectar sus dependencias (Repositorios y DAOs).
+ */
 class MainActivity : ComponentActivity() {
 
-    // ✅ CORREGIDO: Agregar Factory para AuthViewModel
+    // --------------------------------------------------------------------------
+    // 1. Inicialización de AuthViewModel (Manejo de Autenticación)
+    // --------------------------------------------------------------------------
+
+    /**
+     * Inicializa el [AuthViewModel] utilizando `viewModels` delegado.
+     * Se proporciona una [ViewModelProvider.Factory] personalizada para crear e inyectar
+     * el [AuthRepository] necesario para la gestión de Firebase Auth.
+     */
     private val authViewModel: AuthViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -31,6 +46,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // --------------------------------------------------------------------------
+    // 2. Inicialización de GanadoViewModel (Manejo de Datos de Ganado)
+    // --------------------------------------------------------------------------
+
+    /**
+     * Inicializa el [GanadoViewModel] utilizando `viewModels` delegado.
+     * Se proporciona una [ViewModelProvider.Factory] que se encarga de:
+     * 1. Construir la base de datos Room ([AppDatabase]).
+     * 2. Crear las instancias de [AnimalRepository] y [RegistroSaludRepository]
+     * inyectando sus respectivos DAOs.
+     * 3. Crear el [GanadoViewModel] con los repositorios de Room.
+     */
     private val ganadoViewModel: GanadoViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -50,6 +77,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // --------------------------------------------------------------------------
+    // 3. Ciclo de Vida: onCreate
+    // --------------------------------------------------------------------------
+
+    /**
+     * Método llamado al crearse la actividad.
+     * Configura el contenido de la interfaz de usuario utilizando Jetpack Compose.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

@@ -205,7 +205,6 @@ object CodigoInvitacionRepository {
 
             if (!query.isEmpty && query.documents.isNotEmpty()) {
                 val document = query.documents[0]
-                // Se corrigió el mapeo al objeto para ser más seguro
                 document.toObject(CodigoInvitacion::class.java)?.copy(id = document.id)
             } else {
                 null

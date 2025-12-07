@@ -1,10 +1,8 @@
 package mx.edu.utng.lojg.ganaderia20.ui.theme.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,14 +16,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,14 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import mx.edu.utng.lojg.ganaderia20.data.entities.RegistroSaludEntity
 import mx.edu.utng.lojg.ganaderia20.ui.theme.components.TarjetaSalud
 import mx.edu.utng.lojg.ganaderia20.viewmodel.GanadoViewModel
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.Clear
@@ -54,6 +46,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.foundation.layout.size
 
+
+/**
+ * Pantalla Composable que muestra el historial de registros de salud detallado para un animal específico.
+ *
+ * Permite al usuario:
+ * 1. Ver una lista de todos los registros de salud asociados al [arete] proporcionado.
+ * 2. Buscar/filtrar registros por arete, tipo, tratamiento o responsable.
+ * 3. Agregar un nuevo registro de salud mediante un diálogo.
+ * 4. Volver a la pantalla anterior.
+ *
+ * Los registros se cargan al inicio usando [viewModel.cargarHistorial].
+ *
+ * @param navController El controlador de navegación para manejar la pila de pantallas.
+ * @param arete El identificador único del animal (arete) cuyo historial se debe mostrar.
+ * @param viewModel El [GanadoViewModel] para la gestión de datos de salud y persistencia.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistorialSaludScreen(
@@ -64,10 +72,14 @@ fun HistorialSaludScreen(
     var mostrarDialogoNuevoRegistro by remember { mutableStateOf(false) }
     var busqueda by remember { mutableStateOf("") }
 
-    // Obtener los registros de salud del ViewModel
-    val registros = viewModel.registrosSalud.collectAsState().value
+    // Obtener los registros de salud del ViewModel (lista filtrada por el ViewModel al cargar)
+    // FIX: Agregado initial = emptyList() para evitar crash en emulador nuevo
+    val registros = viewModel.registrosSalud.collectAsState(initial = emptyList()).value
 
-    // FILTRAR registros por arete o descripción
+    /**
+     * Lista de registros de salud filtrados localmente por la cadena [busqueda].
+     * Se recalcula si la lista base [registros] o la [busqueda] cambian.
+     */
     val registrosFiltrados = remember(registros, busqueda) {
         if (busqueda.isBlank()) {
             registros
@@ -81,7 +93,7 @@ fun HistorialSaludScreen(
         }
     }
 
-    // Cargar el historial cuando la pantalla se inicie
+    // Cargar el historial específico del animal cuando la pantalla se inicie o cambie el arete
     LaunchedEffect(arete) {
         viewModel.cargarHistorial(arete)
     }
@@ -145,6 +157,9 @@ fun HistorialSaludScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
+            // --- Lógica de Estado Vacío (Empty State) ---
+
+            // Estado vacío: No hay registros Y la búsqueda está vacía
             if (registrosFiltrados.isEmpty() && busqueda.isEmpty()) {
                 Column(
                     modifier = Modifier
@@ -166,7 +181,9 @@ fun HistorialSaludScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            } else if (registrosFiltrados.isEmpty() && busqueda.isNotEmpty()) {
+            }
+            // Estado vacío: No hay registros PERO la búsqueda NO está vacía (cero resultados)
+            else if (registrosFiltrados.isEmpty() && busqueda.isNotEmpty()) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -185,21 +202,25 @@ fun HistorialSaludScreen(
                         "No se encontraron resultados para \"$busqueda\"",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 32.dp)
                     )
                 }
-            } else {
+            }
+            // Lista de registros
+            else {
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(16.dp)
+                        .padding(horizontal = 16.dp)
                 ) {
                     items(registrosFiltrados) { registro ->
+                        // Componente TarjetaSalud para mostrar cada registro
                         TarjetaSalud(
                             registro = registro,
                             viewModel = viewModel,
                             onEstadoCambiado = {
+                                // Recarga el historial del arete actual si se modifica un registro
                                 viewModel.cargarHistorial(arete)
                             }
                         )
@@ -209,6 +230,7 @@ fun HistorialSaludScreen(
             }
 
             Spacer(Modifier.height(16.dp))
+            // Botón flotante/inferior para agregar registro (duplicado para accesibilidad)
             Button(
                 onClick = { mostrarDialogoNuevoRegistro = true },
                 modifier = Modifier
@@ -222,23 +244,32 @@ fun HistorialSaludScreen(
         }
     }
 
-    // Diálogo para nuevo registro
+    // Muestra el diálogo para crear un nuevo registro
     if (mostrarDialogoNuevoRegistro) {
         DialogoNuevoRegistroSalud(
             onDismiss = { mostrarDialogoNuevoRegistro = false },
             onGuardar = { tipo, descripcion ->
+                // Llama al ViewModel para guardar el registro con los datos del diálogo
                 viewModel.agregarRegistroSaludSimple(
                     arete = arete,
                     tipo = tipo,
                     descripcion = descripcion
                 )
                 mostrarDialogoNuevoRegistro = false
+                // No se necesita recarga explícita aquí si ViewModel usa StateFlow y la lista se actualiza automáticamente
             }
         )
     }
 }
 
-// ---------- CÓDIGO AÑADIDO ----------
+
+/**
+ * Componente Composable que presenta un cuadro de diálogo (AlertDialog) para ingresar
+ * un nuevo registro de salud simple (tipo y descripción).
+ *
+ * @param onDismiss Función lambda que se invoca al cancelar o cerrar el diálogo.
+ * @param onGuardar Función lambda que se invoca al confirmar, pasando el tipo y la descripción.
+ */
 @Composable
 fun DialogoNuevoRegistroSalud(
     onDismiss: () -> Unit,
@@ -273,6 +304,7 @@ fun DialogoNuevoRegistroSalud(
         confirmButton = {
             Button(
                 onClick = {
+                    // Solo permite guardar si ambos campos están llenos
                     if (tipo.isNotBlank() && descripcion.isNotBlank()) {
                         onGuardar(tipo, descripcion)
                     }

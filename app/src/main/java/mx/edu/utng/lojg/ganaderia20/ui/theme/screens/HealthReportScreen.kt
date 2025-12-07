@@ -29,6 +29,16 @@ import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.component.text.textComponent
 
 
+/**
+ * Pantalla Composable que muestra un reporte detallado de salud para un animal específico.
+ *
+ * Muestra información básica del animal, estadísticas clave de salud (peso actual, promedio),
+ * una gráfica de evolución de peso usando la librería Vico, y el historial de pesajes registrados.
+ *
+ * @param navController El controlador de navegación para volver a la pantalla anterior o navegar a la actualización de peso.
+ * @param arete El identificador único del animal (arete) cuyos datos se van a mostrar.
+ * @param viewModel El [GanadoViewModel] que contiene y gestiona los datos de salud del animal.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HealthReportScreen(
@@ -36,11 +46,12 @@ fun HealthReportScreen(
     arete: String,
     viewModel: GanadoViewModel
 ) {
+    // Estados observados del ViewModel
     val registrosPeso by viewModel.registrosPeso.collectAsState()
     val estadisticas by viewModel.estadisticasSalud.collectAsState()
     val animalSeleccionado by viewModel.animalSeleccionado
 
-    // Cargar datos
+    // Cargar datos al iniciar la pantalla
     LaunchedEffect(arete) {
         viewModel.cargarAnimalPorArete(arete)
         viewModel.cargarHistorialPeso(arete)
@@ -65,7 +76,7 @@ fun HealthReportScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Información del animal
+            // --- Sección 1: Información del animal ---
             item {
                 animalSeleccionado?.let { animal ->
                     Card(
@@ -104,7 +115,7 @@ fun HealthReportScreen(
                 }
             }
 
-            // Estado general con estadísticas
+            // --- Sección 2: Estadísticas generales de salud ---
             item {
                 estadisticas?.let { stats ->
                     Card(
@@ -146,7 +157,7 @@ fun HealthReportScreen(
                 }
             }
 
-            // Gráfica de evolución de peso
+            // --- Sección 3: Gráfica de evolución de peso (Vico Chart) ---
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -164,6 +175,7 @@ fun HealthReportScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         if (registrosPeso.isEmpty()) {
+                            // Mensaje de estado vacío para la gráfica
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -192,30 +204,28 @@ fun HealthReportScreen(
                                 }
                             }
                         } else {
-                            // Preparar datos para la gráfica
-                            // CÓDIGO CORREGIDO
+                            // Preparar datos para la gráfica Vico
                             val chartEntryModel = entryModelOf(
                                 registrosPeso.mapIndexed { index, registro ->
-                                    // Se crea un objeto FloatEntry para cada punto de datos
+                                    // Mapea cada registro a un FloatEntry (x=índice, y=peso)
                                     FloatEntry(index.toFloat(), registro.peso.toFloat())
                                 }
                             )
 
-
+                            // Componente Chart de Vico
                             ProvideChartStyle {
-                                // ... justo después de `ProvideChartStyle {`
-
                                 Chart(
                                     chart = lineChart(
                                         lines = listOf(
                                             LineChart.LineSpec(
-                                                lineColor = MaterialTheme.colorScheme.primary.hashCode(),                    lineBackgroundShader = null
+                                                lineColor = MaterialTheme.colorScheme.primary.hashCode(),
+                                                lineBackgroundShader = null // Shader opcional
                                             )
                                         )
                                     ),
                                     model = chartEntryModel,
 
-                                    // Todos los parámetros del eje Y están dentro de `rememberStartAxis`
+                                    // Eje Vertical (Start Axis)
                                     startAxis = rememberStartAxis(
                                         title = "Peso (kg)",
                                         titleComponent = textComponent(
@@ -228,7 +238,7 @@ fun HealthReportScreen(
                                         }
                                     ),
 
-                                    // El eje X (bottomAxis) ya estaba bien
+                                    // Eje Horizontal (Bottom Axis) con formateador de fecha
                                     bottomAxis = rememberBottomAxis(
                                         title = "Fecha",
                                         titleComponent = textComponent(
@@ -239,10 +249,11 @@ fun HealthReportScreen(
                                         label = textComponent {
                                             color = MaterialTheme.colorScheme.onSurface.hashCode()
                                         },
+                                        // Formatea el valor del índice X al inicio de la fecha (ej. "DD/MM")
                                         valueFormatter = { value, _ ->
                                             if (value.toInt() in registrosPeso.indices) {
                                                 val fecha = registrosPeso[value.toInt()].fecha
-                                                fecha.take(5)
+                                                fecha.take(5) // Toma los primeros 5 caracteres (ej. "01/12")
                                             } else ""
                                         }
                                     ),
@@ -265,7 +276,7 @@ fun HealthReportScreen(
                 }
             }
 
-            // Historial de registros de peso
+            // --- Sección 4: Historial de registros de peso detallado ---
             if (registrosPeso.isNotEmpty()) {
                 item {
                     Card(
@@ -281,6 +292,7 @@ fun HealthReportScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
+                            // Muestra los registros en orden inverso (más reciente primero)
                             registrosPeso.reversed().forEach { registro ->
                                 Row(
                                     modifier = Modifier
@@ -309,6 +321,7 @@ fun HealthReportScreen(
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                 }
+                                // Añade un divisor entre elementos, excepto después del último
                                 if (registro != registrosPeso.last()) {
                                     Divider()
                                 }
@@ -318,10 +331,11 @@ fun HealthReportScreen(
                 }
             }
 
-            // Botón para actualizar peso
+            // --- Sección 5: Botón para actualizar peso ---
             item {
                 Button(
                     onClick = {
+                        // Navega a la pantalla de actualización de peso, pasando el arete
                         navController.navigate("actualizar_peso/$arete")
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -335,6 +349,14 @@ fun HealthReportScreen(
     }
 }
 
+/**
+ * Componente Composable auxiliar para mostrar una tarjeta de estadística simple.
+ *
+ * Muestra un valor grande y una etiqueta debajo.
+ *
+ * @param label La etiqueta descriptiva de la estadística (ej. "Peso Actual").
+ * @param value El valor de la estadística formateado como String (ej. "500.5 kg").
+ */
 @Composable
 fun StatCard(label: String, value: String) {
     Column(

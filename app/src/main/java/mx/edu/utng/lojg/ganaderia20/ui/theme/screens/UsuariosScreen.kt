@@ -45,6 +45,28 @@ data class Usuario(
     val permisos: List<String> = emptyList()
 )
 
+/**
+ * Pantalla Composable principal para la **Administración de Usuarios**.
+ *
+ * Permite a los administradores del rancho:
+ * 1. Visualizar un resumen de las estadísticas de usuarios (activos/inactivos/total).
+ * 2. Listar todos los usuarios bajo su gestión (excluyendo 'superadmin').
+ * 3. Editar el rol y los permisos de cualquier usuario existente mediante [DialogoEditarUsuario].
+ * 4. Activar o desactivar usuarios para restringir el acceso.
+ * 5. Generar códigos de invitación mediante [DialogoGenerarCodigo] para registrar nuevos empleados con roles predefinidos.
+ *
+ * ## Flujo de Datos
+ * - **Carga Inicial:** Al entrar ([LaunchedEffect]), se llama a [cargarUsuariosDesdeFirestore] para obtener
+ * todos los usuarios (excluyendo 'superadmin') del rancho asociado.
+ * - **Gestión de Estado:** Los usuarios se mantienen en el estado local `usuarios`. Las acciones
+ * (activar, desactivar, editar) actualizan la lista localmente y persisten los cambios en Firestore.
+ *
+ * @param navController El controlador de navegación para salir de la pantalla.
+ * @param viewModel La instancia del ViewModel (actualmente solo para contexto, pero podría usarse para estados compartidos).
+ * @param currentUserId El ID del usuario actualmente autenticado (el administrador).
+ * @param userRole El rol del usuario actual (por defecto 'admin').
+ * @param propietarioRancho Indica si el usuario actual es el propietario (por defecto 'true').
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UsuariosScreen(
@@ -357,6 +379,20 @@ fun UsuariosScreen(
     }
 }
 
+/**
+ * Componente Composable que muestra la información detallada de un usuario en un formato de tarjeta.
+ *
+ * ## Funcionalidades
+ * 1. **Visualización de Estado:** Resalta el estado (activo/inactivo) del usuario y su rol.
+ * 2. **Información Clave:** Muestra nombre, email, fecha de registro y un resumen de sus permisos.
+ * 3. **Acciones:** Incluye botones para:
+ * - **Editar:** Abre el [DialogoEditarUsuario].
+ * - **Activar/Desactivar:** Llama a [onActivarDesactivarClick] para cambiar el estado de acceso.
+ *
+ * @param usuario El objeto [Usuario] a mostrar.
+ * @param onEditarClick Callback para iniciar la edición de rol y permisos.
+ * @param onActivarDesactivarClick Callback para cambiar el estado `activo` del usuario.
+ */
 @Composable
 fun TarjetaUsuario(
     usuario: Usuario,
@@ -488,6 +524,16 @@ fun TarjetaUsuario(
     }
 }
 
+/**
+ * Diálogo Composable que permite al administrador generar un nuevo Código de Invitación.
+ *
+ * El código generado permitirá a un nuevo usuario registrarse con un **rol predefinido**
+ * (Veterinario, Empleado, Supervisor) y un **número limitado de usos**.
+ *
+ * @param onDismiss Callback para cerrar el diálogo.
+ * @param onGenerarCodigo Callback que se ejecuta al presionar "Generar Código", pasando
+ * el tipo de rol ([String]) y el número de usos ([Int]) seleccionados.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogoGenerarCodigo(
@@ -567,6 +613,20 @@ fun DialogoGenerarCodigo(
     )
 }
 
+/**
+ * Diálogo Composable que permite al administrador editar el rol y los permisos específicos
+ * de un usuario existente.
+ *
+ * ## Funcionalidades
+ * 1. **Edición de Rol:** Permite seleccionar un nuevo rol base (empleado, veterinario, supervisor).
+ * 2. **Edición de Permisos:** Muestra una lista de permisos disponibles con checkboxes
+ * para habilitar o deshabilitar funcionalidades específicas.
+ *
+ * @param usuario El objeto [Usuario] cuyos datos se van a modificar.
+ * @param onDismiss Callback para cerrar el diálogo.
+ * @param onGuardarCambios Callback ejecutado al confirmar, pasa la lista de permisos
+ * modificados y el nuevo rol.
+ */
 @Composable
 fun DialogoEditarUsuario(
     usuario: Usuario,
@@ -679,7 +739,10 @@ fun DialogoEditarUsuario(
 
 
 // --- FUNCIONES DE UTILIDAD ---
-
+/**
+ *Función suspend para obtener todos los documentos de la colección
+ * "usuarios" que no sean 'superadmin'.
+ * */
 private suspend fun cargarUsuariosDesdeFirestore(adminId: String): List<Usuario> {
     return try {
         val db = FirebaseFirestore.getInstance()
@@ -708,6 +771,10 @@ private suspend fun cargarUsuariosDesdeFirestore(adminId: String): List<Usuario>
     }
 }
 
+/**
+ *Función suspend para actualizar el campo activo de un usuario
+ * en Firestore.
+ * */
 private suspend fun toggleUsuarioActivo(usuarioId: String, activo: Boolean) {
     val db = FirebaseFirestore.getInstance()
     db.collection("usuarios")
@@ -716,6 +783,10 @@ private suspend fun toggleUsuarioActivo(usuarioId: String, activo: Boolean) {
         .await()
 }
 
+/**
+ *Función suspend para actualizar los campos rol y
+ * permisos de un usuario en Firestore.
+ * */
 private suspend fun actualizarUsuario(usuarioId: String, permisos: List<String>, rol: String) {
     val db = FirebaseFirestore.getInstance()
     val updates = hashMapOf<String, Any>(
@@ -748,6 +819,10 @@ private suspend fun notificarCambioPermisos(usuarioId: String) {
     }
 }
 
+/**
+ *Función auxiliar que convierte un [Timestamp] de Firebase a una cadena de fecha legible
+ * ("dd/MM/yyyy").
+ * */
 private fun formatearFecha(timestamp: Timestamp): String {
     val date = timestamp.toDate()
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())

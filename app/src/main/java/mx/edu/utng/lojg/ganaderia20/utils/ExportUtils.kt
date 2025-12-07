@@ -23,7 +23,22 @@ import java.util.*
 object ExportUtils {
 
     /**
-     * Genera un PDF con la lista de animales
+     * Genera un archivo PDF detallado con la lista de animales proporcionada.
+     *
+     * Utiliza la biblioteca iText para estructurar el documento.
+     *
+     * ## Proceso
+     * 1. **Creación de Archivo:** Define la ubicación en el directorio de Documentos (`Environment.DIRECTORY_DOCUMENTS/Ganaderia`).
+     * 2. **Metadata:** Añade un título, la fecha de generación y un resumen del inventario (total y por tipo).
+     * 3. **Detalle (Tabla):** Crea una tabla (`com.itextpdf.layout.element.Table`) con encabezados fijos
+     * y agrega una fila por cada [AnimalEntity] en la lista.
+     * 4. **Manejo de Resultado:** Llama a [onSuccess] con la ruta del archivo si el proceso finaliza
+     * correctamente, o a [onError] si ocurre alguna excepción (ej. problemas de I/O o memoria).
+     *
+     * @param context El contexto de la aplicación.
+     * @param animales La lista de [AnimalEntity] a incluir en el reporte.
+     * @param onSuccess Callback que retorna el [File] generado.
+     * @param onError Callback que retorna un mensaje de error si la generación falla.
      */
     fun generarPDFAnimales(
         context: Context,

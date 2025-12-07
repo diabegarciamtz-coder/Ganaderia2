@@ -18,6 +18,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Componente Composable que define un campo de texto personalizado (TextField)
+ * con un estilo específico para la aplicación.
+ *
+ * Incluye una etiqueta (label) y soporta la funcionalidad de campo de contraseña.
+ *
+ * @param label La etiqueta de texto que se mostrará encima del campo de entrada.
+ * @param value Un [MutableState<String>] que contiene y actualiza el valor del texto introducido por el usuario.
+ * @param isPassword Un booleano que, si es verdadero (true), oculta el texto con puntos
+ * utilizando [PasswordVisualTransformation]. Por defecto es falso (false).
+ */
 // --- Campo de texto personalizado ---
 @Composable
 fun CustomTextField(label: String, value: MutableState<String>, isPassword: Boolean = false) {
@@ -29,8 +40,10 @@ fun CustomTextField(label: String, value: MutableState<String>, isPassword: Bool
             onValueChange = { value.value = it },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
+            // Determina la transformación visual: ocultar si es contraseña, o mostrar normalmente.
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             colors = TextFieldDefaults.colors(
+                // Define colores de fondo e indicadores para un diseño limpio y consistente.
                 unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White,
                 focusedIndicatorColor = Color.Transparent,

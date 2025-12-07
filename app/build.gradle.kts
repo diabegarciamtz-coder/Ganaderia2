@@ -108,6 +108,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.geometry)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.geometry)
+    implementation(libs.androidx.material3)
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Testing - ACTUALIZADO con el nuevo BOM

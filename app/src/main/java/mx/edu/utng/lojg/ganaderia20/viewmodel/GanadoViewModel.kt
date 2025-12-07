@@ -23,6 +23,15 @@ import java.util.Locale
 import kotlin.text.RegexOption
 import kotlinx.coroutines.flow.collect // <-- Agrega esta línea
 
+/**
+ * ViewModel principal para la gestión de datos de ganado, utilizando Room (repositorios) y Firebase.
+ *
+ * Se encarga de la lógica de negocio, la carga de datos (animales, registros de salud, historial de peso)
+ * y la gestión del estado de la interfaz de usuario.
+ *
+ * @property repository Repositorio para operaciones CRUD con la entidad [AnimalEntity] (Room).
+ * @property registroSaludRepository Repositorio para operaciones CRUD con la entidad [RegistroSaludEntity] (Room).
+ */
 class GanadoViewModel(
     private val repository: AnimalRepository,
     private val registroSaludRepository: RegistroSaludRepository
@@ -72,20 +81,25 @@ class GanadoViewModel(
     // ============================================================
     // ANIMALES (Room)
     // ============================================================
+    /**
+     * Inserta un nuevo [AnimalEntity] en la base de datos local (Room).
+     * @param animal La entidad de animal a insertar.
+     */
     fun insertarAnimal(animal: AnimalEntity) {
         viewModelScope.launch {
             repository.insertAnimal(animal)
         }
     }
 
+    /**
+     * Elimina un [AnimalEntity] de la base de datos local (Room).
+     * @param animal La entidad de animal a eliminar.
+     */
     fun eliminarAnimal(animal: AnimalEntity) {
         viewModelScope.launch {
             repository.deleteAnimal(animal)
         }
     }
-
-
-    //... (código anterior del ViewModel)
 
     /**
      * Cargar animales según el rol del usuario
@@ -172,12 +186,20 @@ class GanadoViewModel(
     // ============================================================
     // REGISTROS DE SALUD (Room) - FUNCIONES EXISTENTES
     // ============================================================
+    /**
+     * Carga el historial de [RegistroSaludEntity] para un animal específico, identificado por su arete.
+     * @param arete El arete del animal cuyo historial se desea cargar.
+     */
     fun cargarHistorial(arete: String) {
         viewModelScope.launch {
             _registrosSalud.value = registroSaludRepository.obtenerPorArete(arete)
         }
     }
 
+    /**
+     * Inserta un [RegistroSaludEntity] en la base de datos y luego recarga el historial para actualizar el estado.
+     * @param registro El registro de salud a insertar.
+     */
     fun agregarRegistroSalud(registro: RegistroSaludEntity) {
         viewModelScope.launch {
             registroSaludRepository.insertarRegistro(registro)
@@ -185,6 +207,9 @@ class GanadoViewModel(
         }
     }
 
+    /**
+     * Crea e inserta un nuevo [RegistroSaludEntity] con parámetros detallados, y recarga el historial.
+     */
     fun agregarRegistroSalud(
         arete: String,
         fecha: String,
@@ -209,6 +234,10 @@ class GanadoViewModel(
         }
     }
 
+    /**
+     * Obtiene y actualiza la lista de registros de salud filtrada por un estado específico.
+     * @param estado El estado por el cual filtrar (ej. "Pendiente", "Completado").
+     */
     fun obtenerRegistrosPorEstado(estado: String) {
         viewModelScope.launch {
             val filtrados = registroSaludRepository.obtenerPorEstado(estado)
@@ -216,6 +245,10 @@ class GanadoViewModel(
         }
     }
 
+    /**
+     * Elimina un [RegistroSaludEntity] de la base de datos y luego recarga el historial para actualizar el estado.
+     * @param registro El registro de salud a eliminar.
+     */
     fun eliminarRegistroSalud(registro: RegistroSaludEntity) {
         viewModelScope.launch {
             registroSaludRepository.eliminarRegistro(registro)
@@ -223,6 +256,9 @@ class GanadoViewModel(
         }
     }
 
+    /**
+     * Carga todos los [RegistroSaludEntity] existentes en la base de datos local.
+     */
     fun cargarTodosLosRegistros() {
         viewModelScope.launch {
             _registrosSalud.value = registroSaludRepository.obtenerTodos()
@@ -232,6 +268,12 @@ class GanadoViewModel(
     // ============================================================
     // NUEVAS FUNCIONES PARA EL FILTERCHIP - CORREGIDAS
     // ============================================================
+    /**
+     * Actualiza el estado de un registro de salud específico por su ID.
+     * Además, actualiza el flujo `_registrosSalud` en memoria.
+     * @param registroId El ID del registro a actualizar.
+     * @param nuevoEstado El nuevo valor para el campo 'estado'.
+     */
     fun actualizarEstadoRegistro(registroId: Int, nuevoEstado: String) {
         viewModelScope.launch {
             try {
@@ -247,6 +289,12 @@ class GanadoViewModel(
         }
     }
 
+    /**
+     * Agrega un registro de salud simple (sin responsable/observaciones detalladas) y recarga el historial.
+     * @param arete Arete del animal.
+     * @param tipo Tipo de evento de salud.
+     * @param descripcion Descripción del tratamiento o evento.
+     */
     fun agregarRegistroSaludSimple(arete: String, tipo: String, descripcion: String) {
         viewModelScope.launch {
             try {
@@ -268,6 +316,10 @@ class GanadoViewModel(
         }
     }
 
+    /**
+     * Carga un [AnimalEntity] específico por su arete y actualiza el estado `_animalSeleccionado`.
+     * @param arete Arete del animal a buscar.
+     */
     fun cargarAnimalPorArete(arete: String) {
         viewModelScope.launch {
             try {
@@ -282,6 +334,13 @@ class GanadoViewModel(
         }
     }
 
+    /**
+     * Actualiza el peso de un animal existente en la base de datos local y ejecuta un callback.
+     * @param arete El arete del animal a actualizar.
+     * @param nuevoPeso El nuevo peso del animal (en Double).
+     * @param observaciones Observaciones opcionales.
+     * @param callback Función que se ejecuta al finalizar, indicando si la operación fue exitosa (Boolean).
+     */
     fun actualizarPesoAnimal(
         arete: String,
         nuevoPeso: Double,
@@ -419,12 +478,25 @@ class GanadoViewModel(
 // DATA CLASSES NECESARIAS PARA EL NUEVO CÓDIGO
 // ============================================================
 
+/**
+ * Clase de datos que representa un punto de dato de peso para el historial o gráfica.
+ * @property fecha La fecha en la que se registró el peso.
+ * @property peso El peso registrado (en Double).
+ * @property observacion Breve descripción o contexto del registro de peso.
+ */
 data class RegistroPeso(
     val fecha: String,
     val peso: Double,
     val observacion: String
 )
 
+/**
+ * Clase de datos que contiene las estadísticas clave calculadas a partir del historial de peso.
+ * @property pesoActual El peso más reciente registrado.
+ * @property pesoPromedio El promedio de todos los pesos registrados.
+ * @property totalRegistros El número total de registros de peso.
+ * @property ultimaRevision La fecha del último registro de peso.
+ */
 data class EstadisticasSalud(
     val pesoActual: Double,
     val pesoPromedio: Double,

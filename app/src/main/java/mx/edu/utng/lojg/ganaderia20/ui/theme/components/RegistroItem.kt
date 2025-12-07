@@ -10,6 +10,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import mx.edu.utng.lojg.ganaderia20.models.Registro
 
+/**
+ * Componente Composable que representa un elemento individual en una lista de registros.
+ *
+ * Muestra información clave del registro (nombre, arete y fecha) junto con una imagen
+ * en formato de tarjeta (Card) para mejorar la visualización y separación en listas.
+ *
+ * @param registro El objeto [Registro] que contiene los datos a mostrar (nombre, arete, fecha, imagen).
+ */
 @Composable
 fun RegistroItem(registro: Registro) {
     Card(

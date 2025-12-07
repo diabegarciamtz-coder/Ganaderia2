@@ -1,6 +1,7 @@
 package mx.edu.utng.lojg.ganaderia20.ui.theme.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,25 +30,50 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import mx.edu.utng.lojg.ganaderia20.data.entities.RegistroSaludEntity
 import mx.edu.utng.lojg.ganaderia20.viewmodel.GanadoViewModel
+
+/**
+ * Componente Composable que presenta un registro de salud individual en formato de tarjeta.
+ *
+ * Muestra los detalles del registro (tipo, tratamiento, observaciones, fecha, responsable)
+ * y permite cambiar el estado (Pendiente/Realizado) directamente a través de un [FilterChip].
+ * La tarjeta cambia de color según el estado actual del registro.
+ *
+ * @param registro La entidad [RegistroSaludEntity] que contiene todos los datos del registro de salud.
+ * @param viewModel El [GanadoViewModel] necesario para interactuar y actualizar el estado en la base de datos.
+ * @param onEstadoCambiado Función lambda que se invoca después de que el estado del registro es actualizado
+ * en la base de datos, útil para refrescar la vista. Por defecto es vacía.
+ * @param onEditarClick Función lambda que se invoca al pulsar el botón "Editar", pasando la entidad
+ * [RegistroSaludEntity] completa para ser modificada. Por defecto es vacía.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TarjetaSalud(
     registro: RegistroSaludEntity,
     viewModel: GanadoViewModel,
     onEstadoCambiado: () -> Unit = {},
-    onEditarClick: (RegistroSaludEntity) -> Unit = {} // ✅ NUEVO: Callback para editar
+    onEditarClick: (RegistroSaludEntity) -> Unit = {}
 ) {
+    // Estado interno para manejar el estado del registro en la UI antes de la actualización
     var estadoActual by remember { mutableStateOf(registro.estado) }
+    // Estado para controlar la visibilidad del menú de opciones (Editar/Cerrar)
     var mostrarMenu by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            // FIX: Usar clickable con interactionSource y indication de Material 3
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple()
+            ) {
+                mostrarMenu = !mostrarMenu
+            },
         colors = CardDefaults.cardColors(
+            // El color del contenedor se define según el estado actual
             containerColor = when (estadoActual.lowercase()) {
-                "pendiente" -> MaterialTheme.colorScheme.errorContainer
-                "realizado" -> MaterialTheme.colorScheme.primaryContainer
+                "pendiente" -> MaterialTheme.colorScheme.errorContainer // Rojo suave para urgencia
+                "realizado" -> MaterialTheme.colorScheme.primaryContainer // Color primario suave para completado
                 else -> MaterialTheme.colorScheme.surfaceVariant
             }
         )
@@ -73,19 +100,23 @@ fun TarjetaSalud(
                     )
                 }
 
+                // Componente interactivo para cambiar el estado
                 // ✅ MEJORADO: FilterChip con mejor feedback
                 FilterChip(
                     selected = true,
                     onClick = {
                         val nuevoEstado = if (estadoActual.lowercase() == "pendiente") "Realizado" else "Pendiente"
                         estadoActual = nuevoEstado
+                        // Actualiza el estado en la base de datos
                         viewModel.actualizarEstadoRegistro(registro.id, nuevoEstado)
+                        // Llama al callback para notificar a la vista superior
                         onEstadoCambiado()
                     },
                     label = {
                         Text(estadoActual)
                     },
                     colors = FilterChipDefaults.filterChipColors(
+                        // Los colores del Chip reflejan el estado de forma más prominente
                         selectedContainerColor = when (estadoActual.lowercase()) {
                             "pendiente" -> MaterialTheme.colorScheme.error
                             "realizado" -> MaterialTheme.colorScheme.primary
@@ -98,7 +129,8 @@ fun TarjetaSalud(
 
             Spacer(Modifier.height(8.dp))
 
-            // ✅ MEJORADO: Información organizada
+            // Información detallada del registro
+            // ✅ MEJORADO: Información organizada con emojis
             Column {
                 if (registro.tratamiento.isNotBlank()) {
                     Text("💊 Tratamiento: ${registro.tratamiento}")
@@ -116,6 +148,7 @@ fun TarjetaSalud(
                 )
             }
 
+            // Opciones de acción condicionales (Editar/Cerrar)
             // ✅ NUEVO: Menú de opciones al hacer click
             if (mostrarMenu) {
                 Spacer(Modifier.height(8.dp))
@@ -125,6 +158,7 @@ fun TarjetaSalud(
                 ) {
                     Button(
                         onClick = {
+                            // Llama al callback de edición
                             onEditarClick(registro)
                             mostrarMenu = false
                         },

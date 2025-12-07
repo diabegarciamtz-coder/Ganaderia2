@@ -30,13 +30,23 @@ import mx.edu.utng.lojg.ganaderia20.viewmodel.GanadoViewModel
 // ---------------------------------------------------------
 // PANTALLA: REGISTRAR NUEVO EVENTO DE SALUD
 // ---------------------------------------------------------
+/**
+ * Pantalla Composable para registrar un nuevo evento o historial de salud para un animal específico.
+ *
+ * Permite al usuario ingresar la fecha, tipo de evento, tratamiento aplicado, el responsable
+ * y observaciones, validando que los campos obligatorios (Fecha, Tipo, Responsable) estén llenos.
+ *
+ * @param navController El controlador de navegación para volver a la pantalla anterior.
+ * @param arete El identificador único del animal (arete) al que se le registrará el evento.
+ * @param viewModel El [GanadoViewModel] para ejecutar la lógica de guardado de datos de salud.
+ */
 @Composable
 fun RegistrarSaludScreen(
     navController: NavController,
     arete: String,
     viewModel: GanadoViewModel
 ) {
-    // Estados locales para los campos
+    // Estados locales para los campos del formulario
     var fecha by remember { mutableStateOf("") }
     var tipo by remember { mutableStateOf("") }
     var tratamiento by remember { mutableStateOf("") }
@@ -44,7 +54,7 @@ fun RegistrarSaludScreen(
     var observaciones by remember { mutableStateOf("") }
     var mostrarError by remember { mutableStateOf(false) }
 
-    // Lista de tipos de tratamiento para autocompletar
+    // Lista de tipos de tratamiento para sugerencias
     val tiposTratamiento = listOf(
         "Vacunación", "Desparasitación", "Vitaminización", "Curacion",
         "Revisión General", "Parto", "Celo", "Enfermedad", "Cirugía", "Otro"
@@ -65,6 +75,7 @@ fun RegistrarSaludScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // Campo Fecha
             OutlinedTextField(
                 value = fecha,
                 onValueChange = { fecha = it },
@@ -75,6 +86,7 @@ fun RegistrarSaludScreen(
             )
             Spacer(Modifier.height(8.dp))
 
+            // Campo Tipo de Tratamiento (Obligatorio)
             OutlinedTextField(
                 value = tipo,
                 onValueChange = {
@@ -86,15 +98,19 @@ fun RegistrarSaludScreen(
                 modifier = Modifier.fillMaxWidth(),
                 isError = mostrarError && tipo.isBlank(),
                 supportingText = {
+                    // Muestra mensaje de error o sugerencia de autocompletado
                     if (mostrarError && tipo.isBlank()) {
                         Text("Este campo es obligatorio")
-                    } else if (tipo.isNotBlank() && tiposTratamiento.any { it.contains(tipo, true) }) {
-                        Text("Sugerencia: ${tiposTratamiento.find { it.contains(tipo, true) }}")
+                    } else if (tipo.isNotBlank()) {
+                        tiposTratamiento.find { it.contains(tipo, true) }?.let { sugerencia ->
+                            Text("Sugerencia: $sugerencia")
+                        }
                     }
                 }
             )
             Spacer(Modifier.height(8.dp))
 
+            // Campo Tratamiento Aplicado (Opcional)
             OutlinedTextField(
                 value = tratamiento,
                 onValueChange = { tratamiento = it },
@@ -104,6 +120,7 @@ fun RegistrarSaludScreen(
             )
             Spacer(Modifier.height(8.dp))
 
+            // Campo Veterinario / Responsable (Obligatorio)
             OutlinedTextField(
                 value = responsable,
                 onValueChange = {
@@ -123,6 +140,7 @@ fun RegistrarSaludScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            // Campo Observaciones (Opcional)
             OutlinedTextField(
                 value = observaciones,
                 onValueChange = { observaciones = it },
@@ -134,7 +152,7 @@ fun RegistrarSaludScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // Mostrar mensaje de error
+            // Mensaje de error general de validación
             if (mostrarError) {
                 Text(
                     "⚠️ Complete los campos obligatorios",
@@ -145,7 +163,7 @@ fun RegistrarSaludScreen(
 
             Spacer(Modifier.height(20.dp))
 
-
+            // Botones de acción
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -155,14 +173,17 @@ fun RegistrarSaludScreen(
                 }
 
                 Button(onClick = {
-                    // Validación más estricta
+                    // Validación de campos obligatorios
                     val camposObligatorios = listOf(fecha, tipo, responsable)
                     val hayCamposVacios = camposObligatorios.any { it.isBlank() }
 
                     if (hayCamposVacios) {
-                        mostrarError = true
+                        mostrarError = true // Muestra los indicadores de error en los campos
                     } else {
-                        // Creamos el nuevo registro de salud
+                        // Oculta errores previos
+                        mostrarError = false
+
+                        // Llama al ViewModel para guardar el registro
                         viewModel.agregarRegistroSalud(
                             arete = arete,
                             fecha = fecha,
@@ -172,14 +193,14 @@ fun RegistrarSaludScreen(
                             observaciones = observaciones
                         )
 
-                        // Limpiar campos
+                        // Limpiar campos (opcional, ya que se vuelve atrás)
                         fecha = ""
                         tipo = ""
                         tratamiento = ""
                         responsable = ""
                         observaciones = ""
 
-                        // Regresar atrás
+                        // Regresar a la pantalla anterior
                         navController.popBackStack()
                     }
                 }) {
@@ -189,6 +210,3 @@ fun RegistrarSaludScreen(
         }
     }
 }
-
-
-

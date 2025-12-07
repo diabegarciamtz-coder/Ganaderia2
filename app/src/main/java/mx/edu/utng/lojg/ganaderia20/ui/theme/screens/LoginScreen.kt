@@ -22,6 +22,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import mx.edu.utng.lojg.ganaderia20.viewmodel.LoginState
 
+/**
+ * Pantalla Composable de inicio de sesión del sistema Ganadero.
+ *
+ * Esta pantalla gestiona la autenticación del usuario, observando el estado
+ * de [AuthViewModel.loginState] para mostrar indicadores de carga, mensajes de error,
+ * y manejar la navegación a [DashboardScreen] tras un inicio de sesión exitoso.
+ *
+ * @param navController El controlador de navegación para gestionar el flujo de la aplicación.
+ * @param viewModel El [AuthViewModel] para manejar la lógica de autenticación (login).
+ */
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -30,7 +40,7 @@ fun LoginScreen(
     var usuarioOCorreo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
 
-    // Observar el estado del ViewModel
+    // Observar el estado del ViewModel (Idle, Loading, Success, Error)
     val loginState by viewModel.loginState.collectAsState()
 
     // Manejar el estado de la UI basado en el ViewModel
@@ -43,6 +53,7 @@ fun LoginScreen(
             is LoginState.Success -> {
                 // Navegar al dashboard cuando el login es exitoso
                 navController.navigate("dashboard/${state.user.uid}/${state.user.rol}") {
+                    // Limpiar la pila de navegación para que el usuario no pueda volver al login
                     popUpTo("login") { inclusive = true }
                 }
             }
@@ -71,6 +82,7 @@ fun LoginScreen(
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Logo de la aplicación
                 Image(
                     painter = painterResource(id = R.drawable.logo_toro),
                     contentDescription = "Logo toro",
@@ -91,6 +103,7 @@ fun LoginScreen(
                 )
                 Spacer(Modifier.height(32.dp))
 
+                // Campo de texto para Usuario o Correo
                 OutlinedTextField(
                     value = usuarioOCorreo,
                     onValueChange = {
@@ -108,6 +121,7 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(16.dp))
 
+                // Campo de texto para Contraseña
                 OutlinedTextField(
                     value = contrasena,
                     onValueChange = {
@@ -116,6 +130,7 @@ fun LoginScreen(
                     },
                     label = { Text("Contraseña") },
                     singleLine = true,
+                    // Oculta el texto
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier.fillMaxWidth(),
@@ -127,13 +142,14 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(24.dp))
 
+                // Botón de Iniciar Sesión o Indicador de Carga
                 if (isLoading) {
                     CircularProgressIndicator()
                 } else {
                     Button(
                         onClick = {
                             if (usuarioOCorreo.isNotEmpty() && contrasena.isNotEmpty()) {
-                                // Llamar al método de login del ViewModel
+                                // Llama al método de login del ViewModel
                                 viewModel.login(usuarioOCorreo, contrasena)
                             } else {
                                 errorMessage = "Por favor completa todos los campos"
@@ -145,6 +161,7 @@ fun LoginScreen(
                     }
                 }
 
+                // Mensaje de Error
                 if (errorMessage.isNotEmpty()) {
                     Spacer(Modifier.height(16.dp))
                     Text(
@@ -156,6 +173,7 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(24.dp))
 
+                // Enlace a Registro
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
                     Text(
@@ -173,8 +191,9 @@ fun LoginScreen(
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.clickable(
                             interactionSource = remember { MutableInteractionSource() },
-                            indication = null, // Sin efecto visual
+                            indication = null, // Sin efecto visual (ripple)
                             onClick = {
+                                // Navega a la pantalla de registro
                                 navController.navigate("registro")
                             }
                         )

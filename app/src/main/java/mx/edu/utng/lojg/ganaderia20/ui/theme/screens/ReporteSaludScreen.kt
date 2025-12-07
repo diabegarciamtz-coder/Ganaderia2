@@ -16,6 +16,30 @@ import androidx.navigation.NavController
 import mx.edu.utng.lojg.ganaderia20.viewmodel.GanadoViewModel
 import mx.edu.utng.lojg.ganaderia20.ui.theme.components.AnimalSaludCard
 
+/**
+ * Pantalla Composable que muestra el **Reporte General de Salud** de todos los animales registrados.
+ *
+ * Esta pantalla es el punto de acceso para que los administradores, veterinarios o supervisores
+ * revisen rápidamente el estado sanitario de cada animal y accedan a las funciones de
+ * historial o registro de salud individual.
+ *
+ * ## Flujo de Datos y Lógica
+ * 1. **Carga Inicial:** Al entrar a la pantalla ([LaunchedEffect(Unit)]), se invoca
+ * [viewModel.cargarTodosLosRegistros()] para obtener todos los registros de salud
+ * existentes en la base de datos.
+ * 2. **Estados:** Observa los estados [viewModel.animales] y [viewModel.registrosSalud]
+ * del [GanadoViewModel].
+ * 3. **UI Condicional:**
+ * - Si la lista de [animales] está vacía, muestra un mensaje de "No hay animales registrados".
+ * - Si hay animales, utiliza un [LazyColumn] para listar cada animal.
+ * 4. **Componente Clave:** Para cada animal, utiliza el componente [AnimalSaludCard]
+ * que muestra un resumen del estado de salud (implícitamente basado en el último
+ * registro asociado) y proporciona acciones rápidas.
+ *
+ * @param navController El controlador de navegación para moverse a las pantallas de detalle/registro.
+ * @param viewModel La instancia del [GanadoViewModel] para acceder a los datos de los animales
+ * y sus registros de salud.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReporteSaludScreen(

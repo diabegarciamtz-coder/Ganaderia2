@@ -32,14 +32,26 @@ import kotlinx.coroutines.tasks.await
 import mx.edu.utng.lojg.ganaderia20.data.entities.AnimalEntity
 import mx.edu.utng.lojg.ganaderia20.viewmodel.GanadoViewModel
 
+/**
+ * Pantalla Composable para registrar una nueva cría o animal en el sistema.
+ *
+ * Incluye un formulario completo para capturar datos básicos del animal, información de padres,
+ * un campo de raza con autocompletado, la capacidad de seleccionar una foto, y lógica
+ * para autogenerar un arete secuencial.
+ *
+ * La persistencia de datos se realiza tanto en **Firebase Firestore** como en la base de datos local **Room**.
+ *
+ * @param navController El controlador de navegación para volver a la lista de animales.
+ * @param viewModel El [GanadoViewModel] que maneja la lógica de negocio y persistencia.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewModel) {
 
-    // Obtenemos la lista de animales desde el ViewModel
+    // Obtenemos la lista de animales desde el ViewModel para el cálculo del arete
     val animales by viewModel.animales.collectAsState(initial = emptyList<AnimalEntity>())
 
-    // Lista de razas comunes de ganado
+    // Lista de razas comunes de ganado para el autocompletado
     val razasComunes = listOf(
         "Angus", "Hereford", "Brahman", "Charolais", "Limousin", "Simmental",
         "Holstein", "Jersey", "Guernsey", "Pardo Suizo", "Cebú", "Nelore",
@@ -48,24 +60,24 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
         "Tabapuan", "Guzerat"
     )
 
-    // Generar arete automático
+    // Lógica para generar el arete automático (A-001, A-002, ...)
     val siguienteArete by remember(animales) {
         derivedStateOf {
             if (animales.isEmpty()) {
                 "A-001"
             } else {
+                val regex = """[A-Za-z]-?(\d+)""".toRegex()
                 val numeros = animales.mapNotNull { animal ->
-                    val regex = """[A-Za-z]-?(\d+)""".toRegex()
-                    val match = regex.find(animal.arete)
-                    match?.groups?.get(1)?.value?.toIntOrNull()
+                    regex.find(animal.arete)?.groups?.get(1)?.value?.toIntOrNull()
                 }
                 val maxNumero = numeros.maxOrNull() ?: 0
                 val nuevoNumero = maxNumero + 1
-                "A-%03d".format(nuevoNumero)
+                "A-%03d".format(nuevoNumero) // Formato: A-00X
             }
         }
     }
 
+    // Estados del formulario
     var arete by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
     var tipo by remember { mutableStateOf("") }
@@ -79,26 +91,24 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
     var mostrarError by remember { mutableStateOf(false) }
     var mensajeError by remember { mutableStateOf("") }
 
-    // Para manejar el Snackbar y las corrutinas
+    // Estados de UI y Corrutinas
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    var razasExpandidas by remember { mutableStateOf(false) }
 
-    // Launcher para seleccionar imagen
+    // Launcher para seleccionar imagen de la galería
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         fotoUri = uri
     }
 
-    // Inicializa con el arete calculado
+    // Inicializa el campo de arete con el valor calculado
     LaunchedEffect(siguienteArete) {
         arete = siguienteArete
     }
 
-    // Estado para el dropdown de razas
-    var razasExpandidas by remember { mutableStateOf(false) }
-
-    // Filtrar razas basado en lo que el usuario escribe
+    // Filtrar razas para el autocompletado
     val razasFiltradas = if (raza.isBlank()) {
         razasComunes
     } else {
@@ -124,6 +134,8 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
                 Spacer(Modifier.height(16.dp))
             }
 
+            // --- Campos del Formulario ---
+
             item {
                 OutlinedTextField(
                     value = arete,
@@ -134,7 +146,7 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
                     supportingText = {
                         Text("Arete generado automáticamente. Puedes editarlo si es necesario.")
                     },
-                    isError = mostrarError // Muestra el campo en rojo si hay error
+                    isError = mostrarError
                 )
                 Spacer(Modifier.height(8.dp))
             }
@@ -160,13 +172,13 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
             }
 
             item {
-                // CAMPO DE RAZA AUTOCOMPLETABLE
+                // CAMPO DE RAZA AUTOCOMPLETABLE CON DROPDOWN
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = raza,
                         onValueChange = {
                             raza = it
-                            razasExpandidas = true
+                            razasExpandidas = true // Expande al empezar a escribir
                         },
                         label = { Text("Raza") },
                         modifier = Modifier.fillMaxWidth(),
@@ -182,7 +194,7 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
                         }
                     )
 
-                    // Dropdown de razas
+                    // Dropdown de razas filtradas
                     if (razasExpandidas && razasFiltradas.isNotEmpty()) {
                         Card(
                             modifier = Modifier
@@ -204,8 +216,8 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 indication = null,
                                                 onClick = {
-                                                    raza = razaItem
-                                                    razasExpandidas = false
+                                                    raza = razaItem // Selecciona la raza
+                                                    razasExpandidas = false // Cierra el dropdown
                                                 }
                                             )
                                             .padding(12.dp),
@@ -273,7 +285,7 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
             }
 
             item {
-                // Campo de foto
+                // Campo de selección de foto
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(2.dp)
@@ -316,6 +328,7 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
             }
 
             item {
+                // --- Botones de Acción y Lógica de Guardado ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -323,7 +336,6 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
                     OutlinedButton(onClick = { navController.popBackStack() }) {
                         Text("Cancelar")
                     }
-                    // ---------- BOTÓN DE GUARDADO ACTUALIZADO ----------
                     Button(onClick = {
                         val auth = FirebaseAuth.getInstance()
                         val uid = auth.currentUser?.uid ?: ""
@@ -335,9 +347,10 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
                             return@Button
                         }
 
+                        // Usar el arete ingresado o el autogenerado
                         val areteFinal = if (arete.isBlank()) siguienteArete else arete
 
-                        // Verificar que el arete no exista ya
+                        // Validar si el arete ya existe en la lista cargada
                         val areteExiste = animales.any { it.arete == areteFinal }
                         if (areteExiste) {
                             mostrarError = true
@@ -348,11 +361,15 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
                             return@Button
                         }
 
+                        // Reiniciar error si pasa la validación
+                        mostrarError = false
+
                         scope.launch {
                             try {
                                 val db = FirebaseFirestore.getInstance()
+                                // Obtener información del usuario actual
                                 val userDoc = db.collection("usuarios").document(uid).get().await()
-                                val adminId = userDoc.getString("adminId") ?: uid
+                                val adminId = userDoc.getString("adminId") ?: uid // Usar el propio UID si no es subordinado
                                 val nombreUsuario = userDoc.getString("nombre") ?: "Usuario"
 
                                 // Crear el objeto del nuevo animal
@@ -373,7 +390,7 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
                                     registradoPor = nombreUsuario
                                 )
 
-                                // GUARDAR EN FIREBASE PRIMERO
+                                // 1. GUARDAR EN FIREBASE
                                 val animalMap = hashMapOf(
                                     "arete" to nuevoAnimal.arete,
                                     "nombre" to nuevoAnimal.nombre,
@@ -397,26 +414,22 @@ fun PantallaRegistrarCria(navController: NavController, viewModel: GanadoViewMod
                                     .set(animalMap)
                                     .await()
 
-                                // LUEGO GUARDAR EN ROOM
+                                // 2. GUARDAR EN ROOM (base de datos local)
                                 viewModel.insertarAnimal(nuevoAnimal)
 
-                                println("✅ Animal guardado en Firebase y Room: ${nuevoAnimal.arete}")
-
-                                // Volver a la lista
+                                // Volver a la lista al completar el registro
                                 navController.popBackStack()
 
                             } catch (e: Exception) {
-                                println("❌ Error al registrar: ${e.message}")
-                                e.printStackTrace()
+                                // Mostrar error en Snackbar
                                 scope.launch {
-                                    snackbarHostState.showSnackbar("Error: ${e.message}")
+                                    snackbarHostState.showSnackbar("Error al registrar: ${e.message}")
                                 }
                             }
                         }
                     }) {
                         Text("Registrar Cría")
                     }
-                    // ---------- FIN DE LA LÓGICA ACTUALIZADA ----------
                 }
             }
         }

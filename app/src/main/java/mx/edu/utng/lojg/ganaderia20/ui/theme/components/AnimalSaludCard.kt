@@ -15,14 +15,24 @@ import mx.edu.utng.lojg.ganaderia20.data.entities.RegistroSaludEntity
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Componente Composable que representa una tarjeta de resumen para el estado de salud de un animal.
+ *
+ * Muestra información básica del animal, el último registro de salud y botones de acción.
+ *
+ * @param animal El objeto [Animal] cuyos datos se van a mostrar.
+ * @param registrosSalud La lista completa de [RegistroSaludEntity] disponibles en la vista. La función filtra los registros solo para este animal.
+ * @param onVerDetalle Función lambda que se invoca al pulsar el botón "Ver Historial", pasando el arete del animal.
+ * @param onAgregarRegistro Función lambda que se invoca al pulsar el botón "Nuevo Registro", pasando el arete del animal.
+ */
 @Composable
 fun AnimalSaludCard(
     animal: Animal,
-    registrosSalud: List<RegistroSaludEntity>, // ✅ Cambiado a RegistroSaludEntity
+    registrosSalud: List<RegistroSaludEntity>,
     onVerDetalle: (String) -> Unit,
     onAgregarRegistro: (String) -> Unit
 ) {
-    // Filtrar registros solo para este animal
+    // Lógica interna para filtrar y encontrar el último registro del animal específico
     val registrosDelAnimal = registrosSalud.filter { it.areteAnimal == animal.arete }
     val ultimoRegistro = registrosDelAnimal.sortedByDescending { it.fecha }.firstOrNull()
     val totalRegistros = registrosDelAnimal.size
@@ -55,6 +65,7 @@ fun AnimalSaludCard(
                     )
                 }
 
+                // Indicador visual del estado de salud
                 // ✅ CORREGIDO: Pasar solo los registros de este animal
                 HealthStatusIndicator(registrosDelAnimal)
             }
@@ -126,10 +137,18 @@ fun AnimalSaludCard(
     }
 }
 
+/**
+ * Componente Composable que muestra un indicador visual del estado de salud de un animal.
+ *
+ * El estado se determina basado en la presencia de registros de tipo "Enfermedad" o registros "Pendientes".
+ *
+ * @param registros La lista de [RegistroSaludEntity] de un animal específico.
+ */
 @Composable
 private fun HealthStatusIndicator(registros: List<RegistroSaludEntity>) {
     val tienePendientes = registros.any { it.estado == "Pendiente" }
     val tieneEnfermedades = registros.any {
+        // Se considera enfermo si tiene un registro de tipo "Enfermedad" que no ha sido "Resuelto"
         it.tipo == "Enfermedad" && it.estado != "Resuelto"
     }
 
@@ -140,7 +159,7 @@ private fun HealthStatusIndicator(registros: List<RegistroSaludEntity>) {
             "Enfermo"
         )
         tienePendientes -> Triple(
-            MaterialTheme.colorScheme.onSurfaceVariant, // Color alternativo
+            MaterialTheme.colorScheme.onSurfaceVariant, // Color alternativo (e.g., gris/naranja)
             Icons.Filled.Schedule,
             "Pendiente"
         )
@@ -173,6 +192,14 @@ private fun HealthStatusIndicator(registros: List<RegistroSaludEntity>) {
     }
 }
 
+/**
+ * Función auxiliar para formatear una cadena de fecha de 'yyyy-MM-dd' a 'dd/MM/yyyy'.
+ *
+ * Si el formato es inválido, devuelve la cadena original.
+ *
+ * @param fecha La cadena de fecha en formato 'yyyy-MM-dd'.
+ * @return La cadena de fecha formateada a 'dd/MM/yyyy' o la cadena original en caso de error.
+ */
 private fun formatearFecha(fecha: String): String {
     return try {
         val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -180,6 +207,7 @@ private fun formatearFecha(fecha: String): String {
         val date = inputFormat.parse(fecha)
         outputFormat.format(date ?: fecha)
     } catch (e: Exception) {
+        // En caso de error de parseo, devolver la fecha original
         fecha
     }
 }

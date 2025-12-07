@@ -22,6 +22,17 @@ import androidx.compose.ui.unit.dp
 // --------------------------------------------------------------------
 // TARJETA DE DASHBOARD
 // --------------------------------------------------------------------
+/**
+ * Componente Composable que crea una tarjeta informativa estandarizada para el Dashboard.
+ *
+ * Muestra un título, una cantidad destacada y un icono asociado,
+ * ideal para resumir métricas clave (ej. número de animales, total de ventas, etc.).
+ *
+ * @param titulo La cadena de texto que actúa como título o descripción de la métrica (ej. "Total de Animales").
+ * @param cantidad La cadena de texto que representa el valor numérico o la cantidad a destacar (ej. "150").
+ * @param icono El ID del recurso drawable (Int) que se usará como icono ilustrativo en la tarjeta.
+ * @param modifier Modificador opcional para personalizar el diseño o el comportamiento del componente.
+ */
 @Composable
 fun DashboardCard(titulo: String, cantidad: String, icono: Int,modifier: Modifier = Modifier) {
     Card(
@@ -53,7 +64,7 @@ fun DashboardCard(titulo: String, cantidad: String, icono: Int,modifier: Modifie
             }
             Image(
                 painter = painterResource(id = icono),
-                contentDescription = titulo,
+                contentDescription = titulo, // La descripción de accesibilidad es el título
                 modifier = Modifier.size(40.dp)
             )
         }

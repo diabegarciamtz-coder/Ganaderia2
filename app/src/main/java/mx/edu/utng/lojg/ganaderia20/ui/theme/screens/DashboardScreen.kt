@@ -31,6 +31,25 @@ import mx.edu.utng.lojg.ganaderia20.ui.theme.components.RegistroItem
 import mx.edu.utng.lojg.ganaderia20.viewmodel.AuthViewModel
 import mx.edu.utng.lojg.ganaderia20.viewmodel.GanadoViewModel
 
+/**
+ * Pantalla principal del Dashboard que sirve como punto de entrada de la aplicación.
+ *
+ * Muestra un resumen de las métricas clave (total de animales por tipo), los últimos registros
+ * de animales y proporciona un menú lateral de navegación ([AnimatedVisibility]) dinámico
+ * que se ajusta a los permisos del usuario.
+ *
+ * Se encarga de:
+ * 1. Verificar los permisos y el rol del usuario mediante [AuthViewModel].
+ * 2. Cargar la lista de animales mediante [GanadoViewModel].
+ * 3. Mostrar las métricas en tarjetas [DashboardCard].
+ * 4. Listar los registros de animales recientes o un estado vacío con una opción de registro.
+ *
+ * @param uid El ID único del usuario actual logueado.
+ * @param rol El rol inicial del usuario obtenido durante el login.
+ * @param navController El controlador de navegación para cambiar entre pantallas.
+ * @param viewModel El [GanadoViewModel] para acceder y gestionar los datos de los animales.
+ * @param authViewModel El [AuthViewModel] para gestionar la autenticación, permisos y el rol actual.
+ */
 @Composable
 fun DashboardScreen(
     uid: String,
@@ -39,31 +58,37 @@ fun DashboardScreen(
     viewModel: GanadoViewModel,
     authViewModel: AuthViewModel
 ) {
+    // Estados observados del ViewModel
     val permisosActuales by authViewModel.permisosActuales.collectAsState()
     val rolActual by authViewModel.rolActual.collectAsState()
+    val animales by viewModel.animales.collectAsState()
 
+    // Estados locales para la UI
+    var menuAbierto by remember { mutableStateOf(false) }
+    var nombreUsuario by remember { mutableStateOf("Usuario") }
+
+    // Efecto para verificar permisos al iniciar o si el UID cambia
     LaunchedEffect(uid) {
         if (uid.isNotEmpty()) {
             authViewModel.verificarPermisos()
         }
     }
 
+    // Efecto para cargar animales cuando el rol actual esté disponible/actualizado
     LaunchedEffect(rolActual) {
         if (uid.isNotEmpty() && rolActual.isNotEmpty()) {
             viewModel.cargarAnimales(uid, rolActual)
         }
     }
 
-    val animales by viewModel.animales.collectAsState()
-    var menuAbierto by remember { mutableStateOf(false) }
-    var nombreUsuario by remember { mutableStateOf("Usuario") }
-
+    // Efecto para cargar el nombre del usuario desde Firestore
     LaunchedEffect(uid) {
         if (uid.isNotEmpty()) {
             nombreUsuario = obtenerNombreUsuario(uid)
         }
     }
 
+    // Construye la lista de opciones del menú dinámicamente según el rol y los permisos
     val opciones = remember(rolActual, permisosActuales) {
         buildList {
             add(OpcionMenu("Dashboard", Icons.Filled.Home, "dashboard/$uid/${rolActual.ifEmpty { rol }}"))
@@ -87,13 +112,14 @@ fun DashboardScreen(
         }
     }
 
+    // Prepara una lista de los 3 animales más recientes para mostrar en la sección de registros
     val registrosRecientes = remember(animales) {
         animales.take(3).map {
             Registro(
                 nombre = it.nombre,
                 arete = it.arete,
                 fecha = it.fechaNacimiento,
-                imagen = R.drawable.vaca_logo
+                imagen = R.drawable.vaca_logo // Asume un drawable por defecto
             )
         }
     }
@@ -112,7 +138,7 @@ fun DashboardScreen(
                     .padding(horizontal = 16.dp)
             ) {
 
-                // Header
+                // Header de la pantalla con botón de menú, título e información de usuario/rol
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -153,9 +179,10 @@ fun DashboardScreen(
 
                 Spacer(Modifier.height(16.dp))
 
+                // Contenido principal: Métricas y Registros
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     item {
-                        // Cards en una sola columna
+                        // Sección de Tarjetas de Métricas
                         Column(modifier = Modifier.fillMaxWidth()) {
                             DashboardCard(
                                 "Total Animales",
@@ -212,6 +239,7 @@ fun DashboardScreen(
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(Modifier.height(12.dp))
+                                    // Muestra los registros usando el componente RegistroItem
                                     registrosRecientes.forEach {
                                         RegistroItem(it)
                                         Divider(modifier = Modifier.padding(vertical = 4.dp))
@@ -219,7 +247,7 @@ fun DashboardScreen(
                                 }
                             }
                         } else {
-                            // ESTADO VACÍO - VERSIÓN MINIMALISTA SIN ÍCONO
+                            // Estado de la lista vacía
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -233,7 +261,7 @@ fun DashboardScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                // BOTÓN ESTILO TEXTO
+                                // Botón de navegación al registro de cría
                                 Row(
                                     modifier = Modifier
                                         .clickable(
@@ -265,13 +293,15 @@ fun DashboardScreen(
                 }
             }
 
-            // Menú lateral
+            // Menú lateral de navegación (Drawer)
             if (menuAbierto) {
 
+                // Overlay oscuro (Scrim)
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
+                        // Cierra el menú al hacer clic fuera
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
@@ -279,6 +309,7 @@ fun DashboardScreen(
                         )
                 )
 
+                // Contenido del Menú Lateral con animación de visibilidad
                 AnimatedVisibility(
                     visible = menuAbierto,
                     modifier = Modifier.align(Alignment.CenterStart)
@@ -301,6 +332,7 @@ fun DashboardScreen(
                                 .padding(16.dp)
                         ) {
 
+                            // Cabecera del menú con título y botón de cierre
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -330,6 +362,7 @@ fun DashboardScreen(
 
                             Spacer(Modifier.height(24.dp))
 
+                            // Lista de opciones navegables
                             LazyColumn {
                                 items(opciones.size) { index ->
                                     val opcion = opciones[index]
@@ -370,12 +403,29 @@ fun DashboardScreen(
     }
 }
 
+/**
+ * Clase de datos que representa un elemento navegable en el menú lateral.
+ *
+ * Se utiliza para definir las opciones de navegación que se muestran en el menú del Dashboard.
+ *
+ * @property titulo El texto que se muestra en la opción del menú (ej. "Mis Animales").
+ * @property icono El [ImageVector] que representa el icono a mostrar junto al título.
+ * @property ruta La ruta de navegación que se invoca al seleccionar la opción.
+ */
 data class OpcionMenu(
     val titulo: String,
     val icono: ImageVector,
     val ruta: String
 )
 
+/**
+ * Función suspendida para obtener el nombre de un usuario a partir de su UID desde Firestore.
+ *
+ * Consulta la colección "usuarios" con el ID del usuario y busca el campo "nombre" o "username".
+ *
+ * @param uid El ID del usuario cuyo nombre se desea obtener.
+ * @return El nombre del usuario si se encuentra ("nombre" o "username"), de lo contrario, devuelve "Usuario".
+ */
 private suspend fun obtenerNombreUsuario(uid: String): String {
     return try {
         val db = FirebaseFirestore.getInstance()
