@@ -497,7 +497,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 | Actividad 2: Demostración Funcional | [Evidencia](#) | [Ver ejercicio](#) |
 | Actividad 3: Pruebas con Usuarios | [Evidencia](#) | [Ver ejercicio](#) |
 | Carpeta docs/imágenes | [Evidencias](#) | [Ver ejercicio](#) |
-| Enlace a código documentado | [Evidencias](#) | [Ver ejercicio 1](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/app/src/main/java/mx/edu/utng/lojg/ganaderia20/ui/theme/screens/LoginScreen.kt) [Ver ejercicio 2](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/app/src/main/java/mx/edu/utng/lojg/ganaderia20/MainActivity.kt) |
+| Enlace a código documentado | [Evidencias](#) | [Ver ejercicio 1](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/app/src/main/java/mx/edu/utng/lojg/ganaderia20/ui/theme/screens/LoginScreen.kt), [Ver ejercicio 2](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/app/src/main/java/mx/edu/utng/lojg/ganaderia20/MainActivity.kt) |
 
 
 ---
