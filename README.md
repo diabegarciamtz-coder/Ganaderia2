@@ -1,3 +1,6 @@
+
+# Sistema Integral de Gestión Ganadera
+
 El Sistema Integral de Gestión Ganadera es una aplicación móvil Android nativa diseñada para optimizar la administración de ranchos en Dolores Hidalgo. 
 Su objetivo es sustituir los registros manuales tradicionales por un sistema digital que permita llevar un control preciso de cada animal, gestionar 
 información sanitaria y generar reportes analíticos que faciliten la toma de decisiones basadas en datos confiables.
