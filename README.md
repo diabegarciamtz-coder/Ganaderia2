@@ -176,7 +176,7 @@ app/src/main/java/mx/edu/utng/lojg/ganaderia20/
 
 1. **Clonar el repositorio**
 ```bash
-git clone [URL_DEL_REPOSITORIO]
+git clone https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/README.md
 cd ganaderia20
 ```
 
@@ -467,9 +467,8 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 **Diana Mabel García Martínez**
 **Luis Owen Jaramillo Guerrero**
-- GitHub: [@tu-usuario](https://github.com/tu-usuario)
-- LinkedIn: [Tu Perfil](https://linkedin.com/in/tu-perfil)
-- Email: tu-email@ejemplo.com
+- GitHub: [@tu-usuario](https://github.com/diabegarcia-coder)
+- Email: diabegarciamtz@gmail.com
 
 ## 🙏 Agradecimientos
 
@@ -488,8 +487,8 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ---
 
-## 🐄 Sobre el Proyecto
+## 🐄 Sobre el Proyecto 
 
-Este sistema fue desarrollado como proyecto para la materia de Aplicaciones móviles con el objetivo de digitalizar y modernizar la gestión ganadera en México, facilitando el trabajo de propietarios y empleados de ranchos mediante tecnología móvil accesible y eficiente.
+Este sistema fue desarrollado como proyecto para la materia de Aplicaciones móviles con el objetivo de digitalizar y modernizar la gestión ganadera en Dolores HIdalgo y esperando que tenga crecimiento a todo México, facilitando el trabajo de propietarios y empleados de ranchos mediante tecnología móvil accesible y eficiente.
 
 ---
