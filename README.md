@@ -490,7 +490,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 - [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html)
 
 
-## ⚜️ ACTIVIDADES EXTRAS 
+## ⚜️ Actividades extras
 
 | Actividad | Evidencias | Enlace |
 | :--- | :--- | :--- |
