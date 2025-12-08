@@ -490,14 +490,14 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 - [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html)
 
 
-## ⚜️ ACTIVIDADES EXTRAS ⚜️
+## ⚜️ ACTIVIDADES EXTRAS 
 
-| Actividad | Evidencias | CAMPO DE GOLF |
+| Actividad | Evidencias | Enlace |
 | :--- | :--- | :--- |
-| Actividad 2: Demostración Funcional | [Evidencia](#) | [Ver ejercicio](#) |
-| Actividad 3: Pruebas con Usuarios | [Evidencia](#) | [Ver ejercicio](#) |
-| Carpeta docs/imágenes | [Evidencias](#) | [Ver ejercicio](#) |
-| Enlace a código documentado | [Evidencias](#) | [Ver ejercicio 1](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/app/src/main/java/mx/edu/utng/lojg/ganaderia20/ui/theme/screens/LoginScreen.kt), [Ver ejercicio 2](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/app/src/main/java/mx/edu/utng/lojg/ganaderia20/MainActivity.kt) |
+| Actividad 2: Demostración Funcional | [Evidencia] | [Ver ejercicio](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/Demostracion%20de%20funcionalidad.pdf) |
+| Actividad 3: Análisis de la información recabada en Google forms | [Evidencia] | [Ver ejercicio](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/GanaderiaDocs/An%C3%A1lisis%20de%20la%20informaci%C3%B3n%20recabada%20en%20Google%20forms.pdf) |
+| Carpeta docs/imágenes | [Evidencias] | [Ver ejercicio](https://github.com/diabegarciamtz-coder/Ganaderia2/tree/master/GanaderiaDocs) |
+| Enlace a código documentado | [Evidencias] | [Ver ejercicio 1](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/app/src/main/java/mx/edu/utng/lojg/ganaderia20/ui/theme/screens/LoginScreen.kt), [Ver ejercicio 2](https://github.com/diabegarciamtz-coder/Ganaderia2/blob/master/app/src/main/java/mx/edu/utng/lojg/ganaderia20/MainActivity.kt) |
 
 
 ---
